@@ -1,6 +1,10 @@
 // All mock data lives here — swap with real API responses later.
 // Image URLs use Unsplash so screens render even without local assets.
+// Settings items each carry an optional `route` that the Settings screen uses
 
+import { opacity } from "react-native-reanimated/lib/typescript/Colors";
+
+// for navigation. Keep this in sync with files under /app/frontend/app/.
 export const userMock = {
   name: "Sathya",
   fullName: "Sathiya",
@@ -271,6 +275,7 @@ export const settingsGroups = [
         icon: "person-outline" as const,
         title: "Personal Details",
         subtitle: "Name, email, mobile number",
+        route: "/(tabs)/edit-profile" as const,
       },
       {
         id: "plan",
@@ -278,6 +283,7 @@ export const settingsGroups = [
         title: "My Plan",
         subtitle: "Manage your Pro plan",
         badge: "PRO PLAN",
+        route: "/plan" as const,
       },
     ],
   },
@@ -291,19 +297,271 @@ export const settingsGroups = [
         icon: "color-palette-outline" as const,
         title: "Branding & Theme",
         subtitle: "Logo, colors, fonts & themes",
+        route: "/branding" as const,
+
       },
       {
         id: "events",
         icon: "calendar-outline" as const,
         title: "Events & Preferences",
         subtitle: "Default settings for events",
+        route: "/branding" as const,
       },
       {
         id: "analytics",
         icon: "stats-chart-outline" as const,
         title: "Analytics",
         subtitle: "Activity, Registrations",
+        route: "/analytics" as const,
+
       },
     ],
   },
 ];
+
+
+// ──────────────────────────────────────────────────────────────────────────────
+// ANALYTICS MOCK  (shape mirrors what the Node API will return)
+// ──────────────────────────────────────────────────────────────────────────────
+export const analyticsMock = {
+  range: { from: "Mar 01, 2026", to: "Mar 30, 2026" },
+  summary: [
+    {
+      id: "registrations",
+      label: "Registrations",
+      value: "5",
+      delta: "0%",
+      compare: "vs last 6 mo",
+      icon: "people-outline" as const,
+      color: "#EC407A",
+      bg: "#FCE4EC",
+    },
+    {
+      id: "galleryVisit",
+      label: "Gallery Visit",
+      value: "2",
+      delta: "0%",
+      compare: "vs last 6 mo",
+      icon: "image-outline" as const,
+      color: "#10B981",
+      bg: "#E6FBF4",
+    },
+    {
+      id: "imageView",
+      label: "Image View",
+      value: "1,660",
+      delta: "0%",
+      compare: "vs last 6 mo",
+      icon: "eye-outline" as const,
+      color: "#F59E0B",
+      bg: "#FFF4E0",
+    },
+    {
+      id: "downloads",
+      label: "Downloads",
+      value: "0",
+      delta: "0%",
+      compare: "vs last 6 mo",
+      icon: "download-outline" as const,
+      color: "#6366F1",
+      bg: "#EEF0FF",
+    },
+  ],
+  galleryOverTime: {
+    metric: "Gallery Visit",
+    yAxis: [0, 0.5, 1.0, 1.5, 2.0, 2.5],
+    points: [
+      { label: "Sep '25", value: 0 },
+      { label: "Oct '25", value: 0 },
+      { label: "Nov '25", value: 0 },
+      { label: "Dec '25", value: 0 },
+      { label: "Jan '26", value: 0.5 },
+      { label: "Feb '26", value: 0.7 },
+      { label: "Mar '26", value: 1.5 },
+    ],
+  },
+  activityByEvent: [
+    {
+      id: "ev-1",
+      name: "Family Party",
+      icon: "people" as const,
+      color: "#EC407A",
+      galleryVisit: 0,
+      imageView: 0,
+      imageDownload: 0,
+    },
+    {
+      id: "ev-2",
+      name: "Test Event",
+      icon: "ellipse" as const,
+      color: "#F59E0B",
+      galleryVisit: 1,
+      imageView: 602,
+      imageDownload: 0,
+    },
+    {
+      id: "ev-3",
+      name: "New Year",
+      icon: "calendar" as const,
+      color: "#6366F1",
+      galleryVisit: 1,
+      imageView: 56,
+      imageDownload: 0,
+    },
+    {
+      id: "ev-4",
+      name: "Farewell Party",
+      icon: "gift" as const,
+      color: "#6366F1",
+      galleryVisit: 1,
+      imageView: 501,
+      imageDownload: 0,
+    },
+    {
+      id: "ev-5",
+      name: "Freshers Party",
+      icon: "boat" as const,
+      color: "#10B981",
+      galleryVisit: 1,
+      imageView: 501,
+      imageDownload: 0,
+    },
+  ],
+};
+
+// ──────────────────────────────────────────────────────────────────────────────
+// BRANDING & WATERMARK MOCK
+// ──────────────────────────────────────────────────────────────────────────────
+export type WatermarkPosition =
+  | "top-left" | "top-center" | "top-right"
+  | "mid-left" | "center" | "mid-right"
+  | "bottom-left" | "bottom-center" | "bottom-right";
+
+export type WatermarkSize = "small" | "medium" | "large";
+
+export const watermarkPositions: { id: WatermarkPosition; label: string }[] = [
+  { id: "top-left", label: "Top Left" },
+  { id: "top-center", label: "Top Center" },
+  { id: "top-right", label: "Top Right" },
+  { id: "mid-left", label: "Mid Left" },
+  { id: "center", label: "Center" },
+  { id: "mid-right", label: "Mid Right" },
+  { id: "bottom-left", label: "Bottom Left" },
+  { id: "bottom-center", label: "Bottom Center" },
+  { id: "bottom-right", label: "Bottom Right" },
+];
+
+export const watermarkSizes: { id: WatermarkSize; label: string }[] = [
+  { id: "small", label: "Small" },
+  { id: "medium", label: "Medium" },
+  { id: "large", label: "Large" },
+];
+
+export const brandingMock = {
+  enabled: true,
+  studioName: "Your Studio Name",
+  logoUri: null as string | null,
+  previewImage:
+    "https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=80",
+  position: "top-left" as WatermarkPosition,
+  size: "medium" as WatermarkSize,
+  opacity: 80,        // 0-100
+  marginH: 3,          // %
+  marginV: 3,          // %
+  logoSpec: {
+    format: "PNG with transparent background",
+    recommendedSize: "500×500px",
+    maxSizeMb: 2,
+  },
+  note:
+    "Watermark applies to both thumbnail and original during upload processing. " +
+    "Only photos uploaded after enabling will have the watermark. " +
+    "Face detection runs on the clean image before watermarking — so AI recognition is not affected.",
+};
+
+// ──────────────────────────────────────────────────────────────────────────────
+// PLAN / SUBSCRIPTION MOCK
+// ──────────────────────────────────────────────────────────────────────────────
+export type PlanTier = "starter" | "pro" | "elite";
+
+export const plansMock: {
+  id: PlanTier;
+  name: string;
+  tagline: string;
+  price: number;            // 0 means free
+  currency: string;
+  period: string;
+  icon: "leaf-outline" | "diamond-outline" | "ribbon-outline";
+  accent: string;
+  features: string[];
+  ribbon?: string;
+}[] = [
+  {
+    id: "starter",
+    name: "Starter",
+    tagline: "Forever free",
+    price: 0,
+    currency: "Rs.",
+    period: "/ month",
+    icon: "leaf-outline",
+    accent: "#EC407A",
+    features: [
+      "10,000 photos",
+      "10 GB storage",
+      "face recognize",
+      "Guest QR code",
+      "Unlimited events",
+    ],
+  },
+  {
+    id: "pro",
+    name: "Pro",
+    tagline: "For growing studios",
+    price: 499,
+    currency: "Rs.",
+    period: "/ month",
+    icon: "diamond-outline",
+    accent: "#F59E0B",
+    ribbon: "BEST VALUE",
+    features: [
+      "50,000 photos",
+      "50 GB storage",
+      "AI face recognition",
+      "Guest QR code",
+      "WhatsApp sharing",
+      "Priority processing",
+    ],
+  },
+  {
+    id: "elite",
+    name: "Elite",
+    tagline: "For professional studios",
+    price: 999,
+    currency: "Rs.",
+    period: "/ month",
+    icon: "ribbon-outline",
+    accent: "#7C3AED",
+    features: [
+      "1,00,000 photos",
+      "100 GB storage",
+      "AI face recognition",
+      "Guest QR code",
+      "WhatsApp sharing",
+      "Priority processing",
+      "Dedicated support",
+    ],
+  },
+];
+
+export const activePlanMock = {
+  id: "pro" as PlanTier,
+  name: "Pro",
+  price: 499,
+  currency: "Rs.",
+  period: "/ month",
+  status: "ACTIVE",
+  photosUsed: 1662,
+  photosTotal: 50000,
+  storageUsedGb: 0.05,
+  storageTotalGb: 50,
+};
