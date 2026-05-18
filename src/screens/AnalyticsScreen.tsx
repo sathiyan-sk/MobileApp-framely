@@ -1,50 +1,27 @@
-import React, { useMemo, useState } from \"react\";
+import React, { useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-} from \"react-native\";
-import { SafeAreaView } from \"react-native-safe-area-context\";
-import { Ionicons } from \"@expo/vector-icons\";
-import { useRouter } from \"expo-router\";
-import Svg, {
-  Polyline,
-  Circle,
-  Line as SvgLine,
-} from \"react-native-svg\";
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { Colors } from "@/src/constants/colors";
+import { analyticsData, userMock } from "@/src/constants/mockData";
 
-import { Colors } from \"@/src/constants/colors\";
-import { analyticsMock, userMock } from \"@/src/constants/mockData\";
+type Tab = "overview" | "registrations";
 
-const CHART_WIDTH = 300;
-const CHART_HEIGHT = 140;
-
+// "Analytics" screen — overview KPIs, gallery activity over time
+// (line chart) and activity-by-event (bar chart) for the active range.
 export default function AnalyticsScreen() {
   const router = useRouter();
-  const [tab, setTab] = useState<\"overview\" | \"registrations\">(\"overview\");
-  const [selectedEventId, setSelectedEventId] = useState<string>(
-    analyticsMock.activityByEvent[1].id,
-  );
-
-  // ── Line chart points (Sep '25 → Mar '26) ────────────────────────────────
-  const linePoints = useMemo(() => {
-    const { points } = analyticsMock.galleryOverTime;
-    const max = 2.5;
-    const stepX = CHART_WIDTH / (points.length - 1);
-    return points.map((p, i) => ({
-      x: i * stepX,
-      y: CHART_HEIGHT - (p.value / max) * (CHART_HEIGHT - 20) - 10,
-      label: p.label,
-      value: p.value,
-    }));
-  }, []);
-
-  const polyline = linePoints.map((p) => `${p.x},${p.y}`).join(\" \");
+  const [tab, setTab] = useState<Tab>("overview");
 
   return (
-    <SafeAreaView style={styles.safe} edges={[\"top\"]} testID=\"analytics-screen\">
+    <SafeAreaView style={styles.safe} edges={["top"]} testID="analytics-screen">
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
@@ -52,554 +29,776 @@ export default function AnalyticsScreen() {
         {/* Header */}
         <View style={styles.headerRow}>
           <TouchableOpacity
-            style={styles.backBtn}
             onPress={() => router.back()}
-            testID=\"analytics-back\"
+            style={styles.backBtn}
+            testID="analytics-back\"
+            activeOpacity={0.7}
           >
-            <Ionicons name=\"chevron-back\" size={22} color={Colors.primary} />
+            <Ionicons name="chevron-back\" size={22} color={Colors.primary} />
           </TouchableOpacity>
-
-          <View style={styles.userPill}>
-            <Text style={styles.userPillLetter}>{userMock.initial}</Text>
+          <View style={styles.avatarChip}>
+            <Text style={styles.avatarChipText}>
+              {userMock.initial.toUpperCase()}
+            </Text>
           </View>
-
-          <Text style={styles.headerTitle}>Analytics</Text>
-          <View style={{ width: 44 }} />
+          <Text style={styles.title}>Analytics</Text>
+          <View style={{ width: 36 }} />
         </View>
 
-        {/* Date range pill */}
+        {/* Date range */}
         <TouchableOpacity
-          style={styles.dateRow}
+          style={styles.rangePill}
           activeOpacity={0.85}
-          testID=\"analytics-date-range\"
+          testID="date-range"
         >
-          <Ionicons name=\"calendar\" size={16} color={Colors.primary} />
-          <Text style={styles.dateText}>
-            {analyticsMock.range.from} — {analyticsMock.range.to}
-          </Text>
-          <Ionicons name=\"chevron-down\" size={16} color={Colors.primary} />
+          <Ionicons
+            name="calendar-outline"
+            size={16}
+            color={Colors.primary}
+          />
+          <Text style={styles.rangeText}>{analyticsData.range}</Text>
+          <Ionicons name="chevron-down" size={16} color={Colors.primary} />
         </TouchableOpacity>
 
         {/* Tabs */}
-        <View style={styles.tabsRow}>
-          <TouchableOpacity
-            style={styles.tabBtn}
-            onPress={() => setTab(\"overview\")}
-            testID=\"tab-overview\"
-          >
-            <Ionicons
-              name=\"stats-chart\"
-              size={14}
-              color={tab === \"overview\" ? Colors.primary : Colors.textMuted}
-            />
-            <Text
-              style={[
-                styles.tabText,
-                tab === \"overview\" && styles.tabTextActive,
-              ]}
-            >
-              Overview
-            </Text>
-            {tab === \"overview\" && <View style={styles.tabUnderline} />}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.tabBtn}
-            onPress={() => setTab(\"registrations\")}
-            testID=\"tab-registrations\"
-          >
-            <Ionicons
-              name=\"person-outline\"
-              size={14}
-              color={
-                tab === \"registrations\" ? Colors.primary : Colors.textMuted
-              }
-            />
-            <Text
-              style={[
-                styles.tabText,
-                tab === \"registrations\" && styles.tabTextActive,
-              ]}
-            >
-              Registrations
-            </Text>
-            {tab === \"registrations\" && <View style={styles.tabUnderline} />}
-          </TouchableOpacity>
+        <View style={styles.tabs}>
+          <TabBtn
+            label="Overview"
+            icon="stats-chart-outline"
+            active={tab === "overview"}
+            onPress={() => setTab("overview")}
+            testID="tab-overview"
+          />
+          <TabBtn
+            label="Registrations"
+            icon="person-outline"
+            active={tab === "registrations"}
+            onPress={() => setTab("registrations")}
+            testID="tab-registrations"
+          />
         </View>
 
-        {tab === \"overview\" ? (
+        {tab === "overview" ? (
           <>
-            <View style={styles.sectionTitleRow}>
+            {/* Gallery Activity header */}
+            <View style={styles.sectionHead}>
               <Text style={styles.sectionTitle}>Gallery Activity</Text>
-              <Ionicons name=\"add\" size={18} color={Colors.primary} />
+              <Ionicons name="add" size={18} color={Colors.primary} />
             </View>
 
-            {/* Horizontal stat cards */}
+            {/* Stat cards horizontal */}
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 12, paddingRight: 4 }}
-              style={{ marginTop: 4 }}
+              contentContainerStyle={{ paddingRight: 20, gap: 12 }}
+              style={{ marginHorizontal: -20, paddingLeft: 20 }}
             >
-              {analyticsMock.summary.map((s) => (
+              {analyticsData.overview.map((s) => (
                 <View
                   key={s.id}
                   style={styles.statCard}
                   testID={`stat-${s.id}`}
                 >
                   <View
-                    style={[styles.statIconWrap, { backgroundColor: s.bg }]}
+                    style={[
+                      styles.statIcon,
+                      { backgroundColor: s.tintSoft },
+                    ]}
                   >
-                    <Ionicons name={s.icon} size={16} color={s.color} />
+                    <Ionicons name={s.icon} size={18} color={s.tint} />
                   </View>
                   <Text style={styles.statLabel}>{s.label}</Text>
                   <Text style={styles.statValue}>{s.value}</Text>
-                  <View style={styles.statDeltaRow}>
-                    <Ionicons name=\"trending-up\" size={10} color={Colors.green} />
-                    <Text style={styles.statDelta}>{s.delta} {s.compare}</Text>
+                  <View style={styles.statFoot}>
+                    <Ionicons
+                      name="trending-up"
+                      size={11}
+                      color={Colors.textMuted}
+                    />
+                    <Text style={styles.statFootText}>
+                      {s.delta} {s.deltaLabel}
+                    </Text>
                   </View>
                 </View>
               ))}
             </ScrollView>
 
-            {/* Gallery activity over time */}
-            <View style={styles.bigCard}>
-              <View style={styles.cardHeader}>
-                <Text style={styles.cardTitle}>Gallery Activity Over Time</Text>
-                <View style={styles.metricPill}>
-                  <View style={[styles.metricDot, { backgroundColor: Colors.primary }]} />
-                  <Text style={styles.metricText}>
-                    {analyticsMock.galleryOverTime.metric}
+            {/* Activity Over Time */}
+            <View style={styles.chartCard} testID="chart-over-time">
+              <View style={styles.rowBetween}>
+                <Text style={styles.chartTitle}>Gallery Activity Over Time</Text>
+                <View style={styles.chartChip}>
+                  <View style={[styles.chipDot, { backgroundColor: Colors.primary }]} />
+                  <Text style={styles.chipText}>
+                    {analyticsData.activityOverTime.metricLabel}
                   </Text>
                   <Ionicons
-                    name=\"chevron-down\"
+                    name="chevron-down"
                     size={12}
                     color={Colors.textMuted}
                   />
                 </View>
               </View>
 
-              <View style={styles.chartArea}>
-                {/* y-axis labels */}
-                <View style={styles.yAxis}>
-                  {[...analyticsMock.galleryOverTime.yAxis]
-                    .reverse()
-                    .map((v) => (
-                      <Text key={`y-${v}`} style={styles.axisLabel}>
-                        {v.toFixed(1)}
-                      </Text>
-                    ))}
-                </View>
-
-                <View style={{ flex: 1 }}>
-                  <Svg width={CHART_WIDTH} height={CHART_HEIGHT}>
-                    {/* faint grid */}
-                    {[0, 1, 2, 3, 4, 5].map((i) => (
-                      <SvgLine
-                        key={`grid-${i}`}
-                        x1={0}
-                        y1={(CHART_HEIGHT / 5) * i}
-                        x2={CHART_WIDTH}
-                        y2={(CHART_HEIGHT / 5) * i}
-                        stroke=\"#F4E2EA\"
-                        strokeWidth={1}
-                      />
-                    ))}
-                    <Polyline
-                      points={polyline}
-                      fill=\"none\"
-                      stroke={Colors.primary}
-                      strokeWidth={2.5}
-                    />
-                    {linePoints.map((p, i) => (
-                      <Circle
-                        key={`pt-${i}`}
-                        cx={p.x}
-                        cy={p.y}
-                        r={3.5}
-                        fill={Colors.primary}
-                      />
-                    ))}
-                  </Svg>
-
-                  {/* x-axis labels */}
-                  <View style={styles.xAxis}>
-                    {linePoints.map((p) => (
-                      <Text key={p.label} style={styles.axisLabel}>
-                        {p.label}
-                      </Text>
-                    ))}
-                  </View>
-                </View>
-              </View>
+              <LineChart
+                points={analyticsData.activityOverTime.points}
+                maxY={analyticsData.activityOverTime.maxY}
+              />
             </View>
 
-            {/* Activity by event */}
-            <View style={styles.bigCard}>
-              <Text style={styles.cardTitle}>Activity by Event</Text>
+            {/* Activity by Event */}
+            <View style={styles.chartCard} testID="chart-by-event">
+              <Text style={styles.chartTitle}>Activity by Event</Text>
 
               <View style={styles.legendRow}>
-                <Legend label=\"Gallery Visit\" color={Colors.primary} />
-                <Legend label=\"Image View\" color=\"#F59E0B\" />
-                <Legend label=\"Image Download\" color={Colors.purple} />
-              </View>
-
-              <View style={styles.chartArea}>
-                <View style={styles.yAxis}>
-                  {[650, 520, 390, 260, 130, 0].map((v) => (
-                    <Text key={`b-${v}`} style={styles.axisLabel}>
-                      {v}
-                    </Text>
-                  ))}
-                </View>
-                <View style={{ flex: 1, justifyContent: \"flex-end\" }}>
-                  <View style={styles.eventIconsRow}>
-                    {analyticsMock.activityByEvent.map((e) => {
-                      const active = e.id === selectedEventId;
-                      return (
-                        <TouchableOpacity
-                          key={e.id}
-                          style={styles.eventIconCol}
-                          onPress={() => setSelectedEventId(e.id)}
-                          activeOpacity={0.7}
-                          testID={`event-bar-${e.id}`}
-                        >
-                          <View
-                            style={[
-                              styles.eventIconBubble,
-                              active && {
-                                backgroundColor: e.color + \"33\",
-                                borderColor: e.color,
-                              },
-                            ]}
-                          >
-                            <Ionicons name={e.icon} size={16} color={e.color} />
-                          </View>
-                          <Text
-                            style={styles.eventLabel}
-                            numberOfLines={1}
-                            ellipsizeMode=\"tail\"
-                          >
-                            {e.name}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
-                </View>
-              </View>
-
-              {/* Table */}
-              <View style={styles.tableHeader}>
-                <Text style={[styles.tableHead, { flex: 1.4 }]}>EVENT</Text>
-                <View style={styles.tableHeadCell}>
-                  <Ionicons
-                    name=\"image\"
-                    size={14}
-                    color={Colors.primary}
-                  />
-                </View>
-                <View style={styles.tableHeadCell}>
-                  <Ionicons name=\"eye\" size={14} color=\"#F59E0B\" />
-                </View>
-                <View style={styles.tableHeadCell}>
-                  <Ionicons name=\"download\" size={14} color={Colors.purple} />
-                </View>
-              </View>
-
-              {analyticsMock.activityByEvent.map((row) => (
-                <View key={row.id} style={styles.tableRow}>
-                  <View style={[styles.rowName, { flex: 1.4 }]}>
+                {analyticsData.activityByEvent.legend.map((l) => (
+                  <View key={l.id} style={styles.legendItem}>
                     <View
-                      style={[styles.rowDot, { backgroundColor: row.color }]}
+                      style={[styles.legendDot, { backgroundColor: l.color }]}
                     />
-                    <Text style={styles.rowText} numberOfLines={1}>
-                      {row.name}
+                    <Text style={styles.legendLabel}>{l.label}</Text>
+                  </View>
+                ))}
+              </View>
+
+              <BarChart
+                events={analyticsData.activityByEvent.events}
+                maxY={analyticsData.activityByEvent.maxY}
+              />
+            </View>
+
+            {/* Event details table */}
+            <View style={styles.tableCard}>
+              <View style={styles.tableHead}>
+                <Text style={[styles.tableHeadCell, { flex: 2 }]}>EVENT</Text>
+                <View style={[styles.tableHeadIcon, { flex: 1 }]}>
+                  <Ionicons name="image" size={14} color={Colors.primary} />
+                </View>
+                <View style={[styles.tableHeadIcon, { flex: 1 }]}>
+                  <Ionicons name="eye" size={14} color="#F59E0B" />
+                </View>
+                <View style={[styles.tableHeadIcon, { flex: 1 }]}>
+                  <Ionicons name="download" size={14} color="#6366F1" />
+                </View>
+              </View>
+
+              {analyticsData.activityByEvent.events.map((e) => (
+                <View key={e.id} style={styles.tableRow}>
+                  <View style={[styles.tableCell, { flex: 2 }]}>
+                    <View
+                      style={[styles.rowDot, { backgroundColor: e.color }]}
+                    />
+                    <Text style={styles.rowLabel} numberOfLines={1}>
+                      {e.label}
                     </Text>
                   </View>
-                  <Text style={styles.rowCell}>{row.galleryVisit}</Text>
-                  <Text style={styles.rowCell}>{row.imageView}</Text>
-                  <Text style={styles.rowCell}>{row.imageDownload}</Text>
+                  <Text style={styles.tableNum}>{e.visit}</Text>
+                  <Text style={styles.tableNum}>{e.view}</Text>
+                  <Text style={styles.tableNum}>{e.download}</Text>
                 </View>
               ))}
             </View>
           </>
         ) : (
-          <View style={styles.bigCard}>
-            <Text style={styles.cardTitle}>Registrations</Text>
-            <Text style={styles.subtleText}>
-              5 guests registered in the selected range.
+          <View style={styles.emptyCard} testID="registrations-empty">
+            <View style={styles.emptyIcon}>
+              <Ionicons name="people" size={28} color={Colors.primary} />
+            </View>
+            <Text style={styles.emptyTitle}>No registrations yet</Text>
+            <Text style={styles.emptySub}>
+              Guest registrations during this range will appear here.
             </Text>
           </View>
         )}
 
-        <View style={{ height: 100 }} />
+        <View style={{ height: 40 }} />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-const Legend = ({ label, color }: { label: string; color: string }) => (
-  <View style={styles.legendItem}>
-    <View style={[styles.legendDot, { backgroundColor: color }]} />
-    <Text style={styles.legendText}>{label}</Text>
-  </View>
-);
+function TabBtn({
+  label,
+  icon,
+  active,
+  onPress,
+  testID,
+}: {
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  active: boolean;
+  onPress: () => void;
+  testID?: string;
+}) {
+  return (
+    <TouchableOpacity
+      style={styles.tab}
+      activeOpacity={0.7}
+      onPress={onPress}
+      testID={testID}
+    >
+      <Ionicons
+        name={icon}
+        size={16}
+        color={active ? Colors.primary : Colors.textMuted}
+      />
+      <Text
+        style={[
+          styles.tabLabel,
+          active && { color: Colors.primary, fontWeight: "800" },
+        ]}
+      >
+        {label}
+      </Text>
+      {active && <View style={styles.tabUnderline} />}
+    </TouchableOpacity>
+  );
+}
+
+// ----- Charts (lightweight, no external libs) -----
+
+function LineChart({
+  points,
+  maxY,
+}: {
+  points: { label: string; value: number }[];
+  maxY: number;
+}) {
+  const H = 130;
+  const W = 280; // logical width, scaled by flex
+  const yTicks = [maxY, maxY * 0.8, maxY * 0.6, maxY * 0.4, maxY * 0.2, 0];
+
+  // Compute pixel positions for each point (relative coords).
+  const stepX = 100 / Math.max(1, points.length - 1);
+  const coords = points.map((p, i) => ({
+    xPct: i * stepX,
+    yPct: 100 - (p.value / maxY) * 100,
+    label: p.label,
+    value: p.value,
+  }));
+
+  return (
+    <View style={{ marginTop: 12 }}>
+      <View style={{ flexDirection: "row", height: H }}>
+        <View style={styles.yAxis}>
+          {yTicks.map((t, i) => (
+            <Text key={i} style={styles.yTick}>
+              {t.toFixed(1)}
+            </Text>
+          ))}
+        </View>
+
+        <View style={styles.plot}>
+          {/* horizontal grid lines */}
+          {yTicks.map((_, i) => (
+            <View
+              key={i}
+              style={[
+                styles.gridLine,
+                { top: (i / (yTicks.length - 1)) * 100 + "%" } as any,
+              ]}
+            />
+          ))}
+
+          {/* line segments (using rotated thin views) */}
+          {coords.slice(0, -1).map((p, i) => {
+            const n = coords[i + 1];
+            return (
+              <LineSegment
+                key={i}
+                x1Pct={p.xPct}
+                y1Pct={p.yPct}
+                x2Pct={n.xPct}
+                y2Pct={n.yPct}
+              />
+            );
+          })}
+
+          {/* dots */}
+          {coords.map((p, i) => (
+            <View
+              key={i}
+              style={[
+                styles.dot,
+                {
+                  left: `${p.xPct}%`,
+                  top: `${p.yPct}%`,
+                },
+              ]}
+            />
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.xAxis}>
+        {points.map((p, i) => (
+          <Text key={i} style={styles.xTick}>
+            {p.label}
+          </Text>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function LineSegment({
+  x1Pct,
+  y1Pct,
+  x2Pct,
+  y2Pct,
+}: {
+  x1Pct: number;
+  y1Pct: number;
+  x2Pct: number;
+  y2Pct: number;
+}) {
+  // We'll render line via an absolutely positioned <View> with
+  // computed width + rotation. Layout-relative percentages are
+  // approximated using a fixed reference width (the plot stretches).
+  const REF_W = 280;
+  const REF_H = 130;
+  const x1 = (x1Pct / 100) * REF_W;
+  const y1 = (y1Pct / 100) * REF_H;
+  const x2 = (x2Pct / 100) * REF_W;
+  const y2 = (y2Pct / 100) * REF_H;
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const length = Math.sqrt(dx * dx + dy * dy);
+  const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+
+  return (
+    <View
+      pointerEvents="none"
+      style={{
+        position: "absolute",
+        left: `${x1Pct}%`,
+        top: `${y1Pct}%`,
+        width: length,
+        height: 2,
+        backgroundColor: Colors.primary,
+        transform: [
+          { translateY: -1 },
+          { rotateZ: `${angle}deg` },
+          { translateX: 0 },
+        ],
+        transformOrigin: "0% 50%" as any,
+        borderRadius: 1,
+      }}
+    />
+  );
+}
+
+function BarChart({
+  events,
+  maxY,
+}: {
+  events: {
+    id: string;
+    label: string;
+    icon: keyof typeof import("@expo/vector-icons").Ionicons.glyphMap;
+    color: string;
+    visit: number;
+    view: number;
+    download: number;
+  }[];
+  maxY: number;
+}) {
+  const H = 150;
+  const yTicks = [650, 520, 390, 260, 130, 0];
+
+  return (
+    <View style={{ marginTop: 12 }}>
+      <View style={{ flexDirection: "row", height: H }}>
+        <View style={styles.yAxis}>
+          {yTicks.map((t, i) => (
+            <Text key={i} style={styles.yTick}>
+              {t}
+            </Text>
+          ))}
+        </View>
+
+        <View style={styles.plot}>
+          {yTicks.map((_, i) => (
+            <View
+              key={i}
+              style={[
+                styles.gridLine,
+                { top: (i / (yTicks.length - 1)) * 100 + "%" } as any,
+              ]}
+            />
+          ))}
+
+          <View style={styles.barRow}>
+            {events.map((e) => (
+              <View key={e.id} style={styles.barGroup}>
+                <View style={styles.bars}>
+                  <View
+                    style={[
+                      styles.bar,
+                      {
+                        height: `${(e.visit / maxY) * 100}%`,
+                        backgroundColor: "#EC407A",
+                      },
+                    ]}
+                  />
+                  <View
+                    style={[
+                      styles.bar,
+                      {
+                        height: `${(e.view / maxY) * 100}%`,
+                        backgroundColor: "#F59E0B",
+                      },
+                    ]}
+                  />
+                  <View
+                    style={[
+                      styles.bar,
+                      {
+                        height: `${(e.download / maxY) * 100}%`,
+                        backgroundColor: "#6366F1",
+                      },
+                    ]}
+                  />
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.barXAxis}>
+        {events.map((e) => (
+          <View key={e.id} style={styles.barXItem}>
+            <View
+              style={[
+                styles.barXIcon,
+                { backgroundColor: e.color + "22" },
+              ]}
+            >
+              <Ionicons name={e.icon} size={14} color={e.color} />
+            </View>
+            <Text style={styles.barXText} numberOfLines={1}>
+              {e.label}
+            </Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.bgPinkSoft },
-  scroll: { paddingHorizontal: 18, paddingTop: 4, paddingBottom: 16 },
+  scroll: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 24 },
 
   headerRow: {
-    flexDirection: \"row\",
-    alignItems: \"center\",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
     marginTop: 4,
-    marginBottom: 14,
   },
   backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.primaryFaint,
-    alignItems: \"center\",
-    justifyContent: \"center\",
-  },
-  userPill: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: Colors.primaryFaint,
-    alignItems: \"center\",
-    justifyContent: \"center\",
-    marginLeft: 10,
-  },
-  userPillLetter: {
-    color: Colors.primary,
-    fontWeight: \"800\",
-    fontSize: 13,
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: 24,
-    fontWeight: \"800\",
-    color: Colors.textDark,
-    letterSpacing: -0.5,
-    marginLeft: 14,
-    fontFamily: \"Georgia\",
-  },
-
-  dateRow: {
-    flexDirection: \"row\",
-    alignItems: \"center\",
-    backgroundColor: \"#FFFFFF\",
-    borderRadius: 22,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    gap: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
     shadowColor: Colors.shadow,
     shadowOpacity: 1,
     shadowRadius: 8,
-    elevation: 1,
+    elevation: 2,
   },
-  dateText: {
+  avatarChip: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.primarySoft,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarChipText: {
+    color: Colors.primary,
+    fontWeight: "800",
+    fontSize: 14,
+  },
+  title: {
     flex: 1,
+    fontSize: 22,
+    fontWeight: "800",
     color: Colors.textDark,
-    fontSize: 13,
-    fontWeight: \"600\",
+    letterSpacing: -0.4,
+    fontFamily: "Georgia",
   },
 
-  tabsRow: {
-    flexDirection: \"row\",
-    marginTop: 16,
-    marginBottom: 8,
-    gap: 24,
-    paddingHorizontal: 4,
-  },
-  tabBtn: {
+  rangePill: {
     flexDirection: \"row\",
     alignItems: \"center\",
-    gap: 6,
-    paddingVertical: 8,
+    gap: 10,
+    backgroundColor: \"#FFFFFF\",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 30,
+    marginTop: 14,
+    shadowColor: Colors.shadow,
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  tabText: { color: Colors.textMuted, fontSize: 14, fontWeight: \"600\" },
-  tabTextActive: { color: Colors.primary, fontWeight: \"700\" },
+  rangeText: {
+    flex: 1,
+    color: Colors.textBody,
+    fontSize: 13,
+    fontWeight: "500",
+  },
+
+  tabs: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.divider,
+  },
+  tab: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    position: "relative",
+    flex: 1,
+    justifyContent: "center",
+  },
+  tabLabel: { fontSize: 13.5, color: Colors.textMuted, fontWeight: "600" },
   tabUnderline: {
-    position: \"absolute\",
-    bottom: 0,
+    position: "absolute",
+    bottom: -1,
     left: 0,
     right: 0,
-    height: 2,
-    backgroundColor: Colors.primary,
+    height: 3,
     borderRadius: 2,
+    backgroundColor: Colors.primary,
   },
 
-  sectionTitleRow: {
-    flexDirection: \"row\",
-    alignItems: \"center\",
-    gap: 6,
-    marginTop: 6,
+  sectionHead: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 18,
     marginBottom: 10,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: \"800\",
+    fontSize: 22,
+    fontWeight: "800",
     color: Colors.textDark,
     letterSpacing: -0.4,
   },
 
   statCard: {
     width: 150,
-    backgroundColor: \"#FFFFFF\",
-    borderRadius: 18,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
     padding: 14,
     shadowColor: Colors.shadow,
     shadowOpacity: 1,
     shadowRadius: 10,
     elevation: 2,
   },
-  statIconWrap: {
+  statIcon: {
     width: 30,
     height: 30,
-    borderRadius: 10,
-    alignItems: \"center\",
-    justifyContent: \"center\",
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 8,
   },
-  statLabel: {
-    fontSize: 12,
-    color: Colors.textMuted,
-    marginTop: 8,
-    fontWeight: \"600\",
-  },
+  statLabel: { fontSize: 12, color: Colors.textMuted, fontWeight: "600" },
   statValue: {
-    fontSize: 28,
-    fontWeight: \"800\",
+    fontSize: 26,
+    fontWeight: "800",
     color: Colors.textDark,
     letterSpacing: -0.5,
     marginTop: 2,
   },
-  statDeltaRow: { flexDirection: \"row\", alignItems: \"center\", gap: 4, marginTop: 6 },
-  statDelta: { fontSize: 10.5, color: Colors.textMuted, fontWeight: \"500\" },
+  statFoot: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginTop: 6,
+  },
+  statFootText: { fontSize: 10.5, color: Colors.textMuted },
 
-  bigCard: {
-    backgroundColor: \"#FFFFFF\",
-    borderRadius: 20,
+  chartCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
     padding: 16,
-    marginTop: 16,
+    marginTop: 14,
     shadowColor: Colors.shadow,
     shadowOpacity: 1,
-    shadowRadius: 14,
+    shadowRadius: 10,
     elevation: 2,
   },
-  cardHeader: {
-    flexDirection: \"row\",
-    justifyContent: \"space-between\",
-    alignItems: \"center\",
+  rowBetween: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: \"800\",
+  chartTitle: {
+    fontSize: 17,
+    fontWeight: "800",
     color: Colors.textDark,
     letterSpacing: -0.3,
   },
-  metricPill: {
-    flexDirection: \"row\",
-    alignItems: \"center\",
+  chartChip: {
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
-    backgroundColor: Colors.bgPinkSoft,
+    backgroundColor: Colors.primaryFaint,
     paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 14,
+    paddingVertical: 5,
+    borderRadius: 16,
   },
-  metricDot: { width: 8, height: 8, borderRadius: 4 },
-  metricText: { fontSize: 12, color: Colors.textDark, fontWeight: \"600\" },
+  chipDot: { width: 8, height: 8, borderRadius: 4 },
+  chipText: { fontSize: 12, color: Colors.textBody, fontWeight: "600" },
 
-  chartArea: {
-    flexDirection: \"row\",
-    marginTop: 14,
-    height: 160,
-  },
   yAxis: {
-    width: 30,
-    justifyContent: \"space-between\",
-    paddingVertical: 6,
+    width: 32,
+    justifyContent: "space-between",
+    paddingVertical: 2,
   },
-  axisLabel: {
-    fontSize: 10,
-    color: Colors.textFaint,
-    fontWeight: \"500\",
+  yTick: { fontSize: 10, color: Colors.textFaint, textAlign: "right" },
+  plot: { flex: 1, position: "relative", marginLeft: 6 },
+  gridLine: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    height: 1,
+    backgroundColor: "#F4E6EB",
+  },
+  dot: {
+    position: "absolute",
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.primary,
+    marginLeft: -4,
+    marginTop: -4,
   },
   xAxis: {
-    flexDirection: \"row\",
-    justifyContent: \"space-between\",
-    marginTop: 4,
-  },
-
-  legendRow: {
-    flexDirection: \"row\",
-    flexWrap: \"wrap\",
-    gap: 16,
-    marginTop: 8,
-  },
-  legendItem: { flexDirection: \"row\", alignItems: \"center\", gap: 6 },
-  legendDot: { width: 8, height: 8, borderRadius: 4 },
-  legendText: { fontSize: 11.5, color: Colors.textBody, fontWeight: \"500\" },
-
-  eventIconsRow: {
-    flexDirection: \"row\",
-    justifyContent: \"space-between\",
-    paddingTop: 10,
-  },
-  eventIconCol: { alignItems: \"center\", flex: 1, paddingHorizontal: 2 },
-  eventIconBubble: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: \"#F4F4F6\",
-    alignItems: \"center\",
-    justifyContent: \"center\",
-    borderWidth: 1.5,
-    borderColor: \"transparent\",
-  },
-  eventLabel: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 6,
-    fontSize: 9.5,
-    color: Colors.textBody,
-    fontWeight: \"500\",
-    textAlign: \"center\",
+    paddingLeft: 38,
   },
+  xTick: { fontSize: 10, color: Colors.textMuted },
 
-  tableHeader: {
-    flexDirection: \"row\",
-    alignItems: \"center\",
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.divider,
-    marginTop: 12,
+  legendRow: { flexDirection: "row", gap: 14, marginTop: 8, flexWrap: "wrap" },
+  legendItem: { flexDirection: "row", alignItems: "center", gap: 6 },
+  legendDot: { width: 8, height: 8, borderRadius: 4 },
+  legendLabel: { fontSize: 11.5, color: Colors.textBody },
+
+  barRow: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-around",
+    paddingHorizontal: 4,
+  },
+  barGroup: { flex: 1, alignItems: "center", height: "100%", paddingHorizontal: 4 },
+  bars: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 3,
+    height: "100%",
+  },
+  bar: { width: 8, borderTopLeftRadius: 4, borderTopRightRadius: 4 },
+
+  barXAxis: {
+    flexDirection: "row",
+    marginTop: 8,
+    paddingLeft: 38,
+  },
+  barXItem: { flex: 1, alignItems: "center", gap: 4 },
+  barXIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  barXText: { fontSize: 10, color: Colors.textBody, textAlign: "center" },
+
+  tableCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    padding: 12,
+    marginTop: 14,
+    shadowColor: Colors.shadow,
+    shadowOpacity: 1,
+    shadowRadius: 10,
+    elevation: 2,
   },
   tableHead: {
-    fontSize: 10.5,
-    fontWeight: \"700\",
-    color: Colors.textMuted,
-    letterSpacing: 0.6,
-  },
-  tableHeadCell: { flex: 1, alignItems: \"center\" },
-  tableRow: {
-    flexDirection: \"row\",
-    alignItems: \"center\",
-    paddingVertical: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
     borderBottomWidth: 1,
     borderBottomColor: Colors.divider,
   },
-  rowName: { flexDirection: \"row\", alignItems: \"center\", gap: 8 },
+  tableHeadCell: {
+    fontSize: 11,
+    color: Colors.textMuted,
+    fontWeight: "700",
+    letterSpacing: 0.5,
+  },
+  tableHeadIcon: { alignItems: "center" },
+  tableRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.divider,
+  },
+  tableCell: { flexDirection: "row", alignItems: "center", gap: 8 },
   rowDot: { width: 8, height: 8, borderRadius: 4 },
-  rowText: { fontSize: 13, fontWeight: \"500\", color: Colors.textDark },
-  rowCell: {
+  rowLabel: { fontSize: 13, color: Colors.textBody, fontWeight: "600" },
+  tableNum: {
     flex: 1,
-    textAlign: \"center\",
     fontSize: 13,
     color: Colors.textBody,
-    fontWeight: \"600\",
+    textAlign: "center",
+    fontWeight: "600",
   },
 
-  subtleText: { color: Colors.textMuted, fontSize: 13, marginTop: 8 },
+  emptyCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    padding: 28,
+    marginTop: 18,
+    alignItems: "center",
+    shadowColor: Colors.shadow,
+    shadowOpacity: 1,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  emptyIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: Colors.primarySoft,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: Colors.textDark,
+  },
+  emptySub: {
+    color: Colors.textMuted,
+    fontSize: 12.5,
+    textAlign: "center",
+    marginTop: 4,
+  },
 });

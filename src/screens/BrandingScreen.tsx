@@ -9,20 +9,20 @@ import {
   Switch,
   Alert,
   Platform,
-} from \"react-native\";
-import { SafeAreaView } from \"react-native-safe-area-context\";
-import { Ionicons } from \"@expo/vector-icons\";
-import { useRouter } from \"expo-router\";
-import * as ImagePicker from \"expo-image-picker\";
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from expo-router";
+import * as ImagePicker from "expo-image-picker";
 
-import { Colors } from \"@/src/constants/colors\";
+import { Colors } from "@/src/constants/colors";
 import {
   brandingMock,
   watermarkPositions,
   watermarkSizes,
   WatermarkPosition,
   WatermarkSize,
-} from \"@/src/constants/mockData\";
+} from "@/src/constants/mockData";
 
 export default function BrandingScreen() {
   const router = useRouter();
@@ -38,14 +38,14 @@ export default function BrandingScreen() {
 
   const pickLogo = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (perm.status !== \"granted\") {
-      if (!perm.canAskAgain && Platform.OS !== \"web\") {
+    if (perm.status !== "granted") {
+      if (!perm.canAskAgain && Platform.OS !== "web") {
         Alert.alert(
-          \"Permission needed\",
-          \"Allow photo access from Settings to upload a studio logo.\",
+          "Permission needed",
+          "Allow photo access from Settings to upload a studio logo.",
           [
-            { text: \"Cancel\", style: \"cancel\" },
-            { text: \"Open Settings\", onPress: () => ImagePicker.requestMediaLibraryPermissionsAsync() },
+            { text: "Cancel", style: "cancel" },
+            { text: "Open Settings", onPress: () => ImagePicker.requestMediaLibraryPermissionsAsync() },
           ],
         );
       }
@@ -63,8 +63,8 @@ export default function BrandingScreen() {
   };
 
   const positionLabel =
-    watermarkPositions.find((p) => p.id === position)?.label ?? \"Top Left\";
-  const sizeLabel = watermarkSizes.find((s) => s.id === size)?.label ?? \"Medium\";
+    watermarkPositions.find((p) => p.id === position)?.label ?? "Top Left";
+  const sizeLabel = watermarkSizes.find((s) => s.id === size)?.label ?? "Medium";
 
   const handleSave = () => {
     // Production: POST to /api/branding with payload below.
@@ -77,11 +77,11 @@ export default function BrandingScreen() {
       marginH,
       marginV,
     };
-    Alert.alert(\"Branding saved\", JSON.stringify(payload, null, 2));
+    Alert.alert("Branding saved", JSON.stringify(payload, null, 2));
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={[\"top\"]} testID=\"branding-screen\">
+    <SafeAreaView style={styles.safe} edges={["top"]} testID="branding-screen">
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
@@ -91,17 +91,17 @@ export default function BrandingScreen() {
           <TouchableOpacity
             style={styles.backBtn}
             onPress={() => router.back()}
-            testID=\"branding-back\"
+            testID="branding-back"
           >
-            <Ionicons name=\"chevron-back\" size={22} color={Colors.primary} />
+            <Ionicons name="chevron-back" size={22} color={Colors.primary} />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.saveBtn}
             onPress={handleSave}
             activeOpacity={0.85}
-            testID=\"branding-save\"
+            testID="branding-save"
           >
-            <Ionicons name=\"save-outline\" size={16} color={Colors.primary} />
+            <Ionicons name="save-outline" size={16} color={Colors.primary} />
             <Text style={styles.saveBtnText}>Save Branding</Text>
           </TouchableOpacity>
         </View>
@@ -122,9 +122,9 @@ export default function BrandingScreen() {
           <Switch
             value={enabled}
             onValueChange={setEnabled}
-            trackColor={{ false: \"#EAD3DB\", true: Colors.primary }}
-            thumbColor=\"#FFFFFF\"
-            testID=\"watermark-toggle\"
+            trackColor={{ false: "#EAD3DB", true: Colors.primary }}
+            thumbColor="#FFFFFF"
+            testID="watermark-toggle"
           />
         </View>
 
@@ -139,7 +139,7 @@ export default function BrandingScreen() {
             style={styles.uploadBox}
             activeOpacity={0.85}
             onPress={pickLogo}
-            testID=\"logo-upload\"
+            testID="logo-upload"
           >
             {logoUri ? (
               <Image source={{ uri: logoUri }} style={styles.uploadedLogo} />
@@ -147,7 +147,7 @@ export default function BrandingScreen() {
               <>
                 <View style={styles.uploadIcon}>
                   <Ionicons
-                    name=\"cloud-upload-outline\"
+                    name="cloud-upload-outline"
                     size={24}
                     color={Colors.primary}
                   />
@@ -170,9 +170,9 @@ export default function BrandingScreen() {
             style={styles.changeLogoBtn}
             onPress={pickLogo}
             activeOpacity={0.85}
-            testID=\"change-logo\"
+            testID="change-logo"
           >
-            <Ionicons name=\"pencil-outline\" size={14} color={Colors.primary} />
+            <Ionicons name="pencil-outline" size={14} color={Colors.primary} />
             <Text style={styles.changeLogoText}>Change Logo</Text>
           </TouchableOpacity>
         </View>
@@ -204,18 +204,18 @@ export default function BrandingScreen() {
                   source={{ uri: logoUri }}
                   style={[
                     styles.wmLogo,
-                    size === \"small\" && { width: 18, height: 18 },
-                    size === \"large\" && { width: 32, height: 32 },
+                    size === "small" && { width: 18, height: 18 },
+                    size === "large" && { width: 32, height: 32 },
                   ]}
                 />
               ) : (
-                <Ionicons name=\"rose\" size={size === \"small\" ? 14 : size === \"large\" ? 22 : 18} color={Colors.primary} />
+                <Ionicons name="rose" size={size === "small" ? 14 : size === "large" ? 22 : 18} color={Colors.primary} />
               )}
               <Text
                 style={[
                   styles.wmText,
-                  size === \"small\" && { fontSize: 9 },
-                  size === \"large\" && { fontSize: 13 },
+                  size === "small" && { fontSize: 9 },
+                  size === "large" && { fontSize: 13 },
                 ]}
                 numberOfLines={1}
               >
@@ -259,14 +259,14 @@ export default function BrandingScreen() {
                     <View style={styles.posCellDot} />
                   ) : null}
                   <Ionicons
-                    name=\"contract-outline\"
+                    name="contract-outline"
                     size={16}
                     color={active ? Colors.primary : Colors.textMuted}
                   />
                   <Text
                     style={[
                       styles.posLabel,
-                      active && { color: Colors.primary, fontWeight: \"700\" },
+                      active && { color: Colors.primary, fontWeight: "700" },
                     ]}
                   >
                     {p.label}
@@ -285,7 +285,7 @@ export default function BrandingScreen() {
               <Text style={styles.cardTitle}>Watermark Options</Text>
             </View>
             <Ionicons
-              name=\"options-outline\"
+              name="options-outline"
               size={18}
               color={Colors.primary}
             />
@@ -319,37 +319,37 @@ export default function BrandingScreen() {
 
           {/* Sliders */}
           <SliderRow
-            label=\"Opacity\"
+            label="Opacity"
             value={opacity}
-            suffix=\"%\"
+            suffix="%)"
             onChange={setOpacity}
             min={0}
             max={100}
-            testID=\"slider-opacity\"
+            testID="slider-opacity"
           />
           <SliderRow
-            label=\"Horizontal Margin\"
+            label="Horizontal Margin"
             value={marginH}
-            suffix=\"%\"
+            suffix="%)"
             onChange={setMarginH}
             min={0}
             max={20}
-            testID=\"slider-margin-h\"
+            testID="slider-margin-h"
           />
           <SliderRow
-            label=\"Vertical Margin\"
+            label="Vertical Margin"
             value={marginV}
-            suffix=\"%\"
+            suffix="%)"
             onChange={setMarginV}
             min={0}
             max={20}
-            testID=\"slider-margin-v\"
+            testID="slider-margin-v"
           />
         </View>
 
         {/* Note */}
         <View style={styles.noteCard}>
-          <Ionicons name=\"shield-checkmark\" size={18} color={Colors.primary} />
+          <Ionicons name="shield-checkmark" size={18} color={Colors.primary} />
           <Text style={styles.noteText}>
             <Text style={styles.noteHead}>Note: </Text>
             {brandingMock.note}
@@ -407,10 +407,10 @@ const SliderRow = ({
       </View>
       <View style={styles.sliderBtnRow}>
         <TouchableOpacity onPress={stepDown} style={styles.stepBtn} testID={`${testID}-down`}>
-          <Ionicons name=\"remove\" size={14} color={Colors.primary} />
+          <Ionicons name="remove" size={14} color={Colors.primary} />
         </TouchableOpacity>
         <TouchableOpacity onPress={stepUp} style={styles.stepBtn} testID={`${testID}-up`}>
-          <Ionicons name=\"add\" size={14} color={Colors.primary} />
+          <Ionicons name="add" size={14} color={Colors.primary} />
         </TouchableOpacity>
       </View>
     </View>
@@ -426,23 +426,23 @@ const wmPositionStyle = (
   const h = `${marginH}%` as const;
   const v = `${marginV}%` as const;
   switch (pos) {
-    case \"top-left\":
+    case "top-left":
       return { top: v, left: h };
-    case \"top-center\":
-      return { top: v, alignSelf: \"center\" as const };
-    case \"top-right\":
+    case "top-center":
+      return { top: v, alignSelf: "center" as const };
+    case "top-right":
       return { top: v, right: h };
-    case \"mid-left\":
-      return { top: \"45%\" as const, left: h };
-    case \"center\":
-      return { top: \"45%\" as const, alignSelf: \"center\" as const };
-    case \"mid-right\":
-      return { top: \"45%\" as const, right: h };
-    case \"bottom-left\":
+    case "mid-left":
+      return { top: "45%" as const, left: h };
+    case "center":
+      return { top: "45%" as const, alignSelf: "center" as const };
+    case "mid-right":
+      return { top: "45%" as const, right: h };
+    case "bottom-left":
       return { bottom: v, left: h };
-    case \"bottom-center\":
-      return { bottom: v, alignSelf: \"center\" as const };
-    case \"bottom-right\":
+    case "bottom-center":
+      return { bottom: v, alignSelf: "center" as const };
+    case "bottom-right":
       return { bottom: v, right: h };
   }
 };
@@ -452,9 +452,9 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 18, paddingTop: 4, paddingBottom: 16 },
 
   headerRow: {
-    flexDirection: \"row\",
-    justifyContent: \"space-between\",
-    alignItems: \"center\",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginTop: 4,
   },
   backBtn: {
@@ -462,14 +462,14 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     backgroundColor: Colors.primaryFaint,
-    alignItems: \"center\",
-    justifyContent: \"center\",
+    alignItems: "center",
+    justifyContent: "center",
   },
   saveBtn: {
-    flexDirection: \"row\",
-    alignItems: \"center\",
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
-    backgroundColor: \"#FFFFFF\",
+    backgroundColor: "#FFFFFF",
     paddingHorizontal: 14,
     paddingVertical: 9,
     borderRadius: 22,
@@ -478,15 +478,15 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 1,
   },
-  saveBtnText: { color: Colors.primary, fontWeight: \"700\", fontSize: 13 },
+  saveBtnText: { color: Colors.primary, fontWeight: "700", fontSize: 13 },
 
   title: {
     fontSize: 32,
-    fontWeight: \"800\",
+    fontWeight: "800",
     color: Colors.textDark,
     letterSpacing: -0.7,
     marginTop: 14,
-    fontFamily: \"Georgia\",
+    fontFamily: "Georgia",
   },
   subtitle: {
     fontSize: 13,
@@ -496,9 +496,9 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    flexDirection: \"row\",
-    alignItems: \"center\",
-    backgroundColor: \"#FFFFFF\",
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
     borderRadius: 18,
     padding: 14,
     gap: 12,
@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   cardBlock: {
-    backgroundColor: \"#FFFFFF\",
+    backgroundColor: "#FFFFFF",
     borderRadius: 18,
     padding: 16,
     marginTop: 12,
@@ -519,12 +519,12 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   blockHeader: {
-    flexDirection: \"row\",
-    alignItems: \"center\",
+    flexDirection: "row",
+    alignItems: "center",
     gap: 10,
     marginBottom: 12,
   },
-  cardTitle: { fontSize: 15.5, fontWeight: \"700\", color: Colors.textDark },
+  cardTitle: { fontSize: 15.5, fontWeight: "700", color: Colors.textDark },
   cardSub: { color: Colors.textMuted, fontSize: 12, marginTop: 2 },
 
   numBadge: {
@@ -532,43 +532,43 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 14,
     backgroundColor: Colors.primary,
-    alignItems: \"center\",
-    justifyContent: \"center\",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  numBadgeText: { color: \"#FFFFFF\", fontWeight: \"800\", fontSize: 12 },
+  numBadgeText: { color: "#FFFFFF", fontWeight: "800", fontSize: 12 },
 
   uploadBox: {
     borderRadius: 14,
     borderWidth: 1.5,
     borderColor: Colors.primary,
-    borderStyle: \"dashed\",
+    borderStyle: "dashed",
     backgroundColor: Colors.bgPinkSoft,
     paddingVertical: 22,
-    alignItems: \"center\",
+    alignItems: "center",
   },
   uploadIcon: {
     width: 44,
     height: 44,
     borderRadius: 22,
     backgroundColor: Colors.primaryFaint,
-    alignItems: \"center\",
-    justifyContent: \"center\",
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 10,
   },
-  uploadTitle: { fontWeight: \"700\", color: Colors.textDark, fontSize: 14 },
+  uploadTitle: { fontWeight: "700", color: Colors.textDark, fontSize: 14 },
   uploadHint: { color: Colors.textMuted, fontSize: 11.5, marginTop: 2 },
   uploadMax: {
     color: Colors.primary,
-    fontWeight: \"700\",
+    fontWeight: "700",
     fontSize: 11.5,
     marginTop: 6,
   },
   uploadedLogo: { width: 110, height: 110, borderRadius: 10 },
 
   changeLogoBtn: {
-    flexDirection: \"row\",
-    alignItems: \"center\",
-    justifyContent: \"center\",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 6,
     marginTop: 10,
     borderRadius: 22,
@@ -576,54 +576,54 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
     paddingVertical: 10,
   },
-  changeLogoText: { color: Colors.primary, fontWeight: \"700\", fontSize: 13 },
+  changeLogoText: { color: Colors.primary, fontWeight: "700", fontSize: 13 },
 
   previewWrap: {
-    width: \"100%\",
+    width: "100%",
     height: 130,
     borderRadius: 14,
-    overflow: \"hidden\",
-    position: \"relative\",
-    backgroundColor: \"#F4DCE3\",
+    overflow: "hidden",
+    position: "relative",
+    backgroundColor: "#F4DCE3",
   },
-  previewImage: { width: \"100%\", height: \"100%\" },
+  previewImage: { width: "100%", height: "100%" },
   previewWatermark: {
-    position: \"absolute\",
-    flexDirection: \"row\",
-    alignItems: \"center\",
+    position: "absolute",
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
-    backgroundColor: \"rgba(255,255,255,0.85)\",
+    backgroundColor: "rgba(255,255,255,0.85)",
     paddingHorizontal: 6,
     paddingVertical: 3,
     borderRadius: 6,
   },
   wmLogo: { width: 24, height: 24, borderRadius: 4 },
-  wmText: { color: Colors.textDark, fontWeight: \"700\", fontSize: 11 },
+  wmText: { color: Colors.textDark, fontWeight: "700", fontSize: 11 },
 
   previewMetaRow: {
-    flexDirection: \"row\",
-    justifyContent: \"space-between\",
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 10,
-    flexWrap: \"wrap\",
+    flexWrap: "wrap",
     gap: 8,
   },
   previewMeta: { color: Colors.textMuted, fontSize: 11.5 },
-  previewMetaValue: { color: Colors.primary, fontWeight: \"700\" },
+  previewMetaValue: { color: Colors.primary, fontWeight: "700" },
 
   posGrid: {
-    flexDirection: \"row\",
-    flexWrap: \"wrap\",
-    justifyContent: \"space-between\",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
     gap: 8,
   },
   posCell: {
-    width: \"31%\",
+    width: "31%",
     paddingVertical: 14,
     borderRadius: 12,
     borderWidth: 1.2,
     borderColor: Colors.divider,
-    alignItems: \"center\",
-    backgroundColor: \"#FFFFFF\",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
   },
   posCellActive: {
     borderColor: Colors.primary,
@@ -634,27 +634,27 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
     backgroundColor: Colors.primary,
-    position: \"absolute\",
+    position: "absolute",
     top: 8,
     right: 8,
   },
   posLabel: {
     fontSize: 11,
     color: Colors.textMuted,
-    fontWeight: \"600\",
+    fontWeight: "600",
     marginTop: 4,
   },
 
   optLabel: {
     color: Colors.textBody,
     fontSize: 13,
-    fontWeight: \"600\",
+    fontWeight: "600",
     marginTop: 6,
     marginBottom: 8,
   },
   segment: {
-    flexDirection: \"row\",
-    backgroundColor: \"#F1E1E7\",
+    flexDirection: "row",
+    backgroundColor: "#F1E1E7",
     borderRadius: 22,
     padding: 4,
     gap: 4,
@@ -663,34 +663,34 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     borderRadius: 18,
-    alignItems: \"center\",
+    alignItems: "center",
   },
   segmentActive: { backgroundColor: Colors.primary },
-  segmentText: { color: Colors.textBody, fontWeight: \"600\", fontSize: 13 },
-  segmentTextActive: { color: \"#FFFFFF\", fontWeight: \"700\" },
+  segmentText: { color: Colors.textBody, fontWeight: "600", fontSize: 13 },
+  segmentTextActive: { color: "#FFFFFF", fontWeight: "700" },
 
   sliderRow: { marginTop: 18 },
   sliderHead: {
-    flexDirection: \"row\",
-    justifyContent: \"space-between\",
-    alignItems: \"center\",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
-  sliderLabel: { color: Colors.textBody, fontWeight: \"500\", fontSize: 13 },
-  sliderValue: { color: Colors.textDark, fontWeight: \"700\", fontSize: 13 },
+  sliderLabel: { color: Colors.textBody, fontWeight: "500", fontSize: 13 },
+  sliderValue: { color: Colors.textDark, fontWeight: "700", fontSize: 13 },
   sliderTrack: {
     height: 5,
     borderRadius: 3,
     backgroundColor: Colors.primarySoft,
     marginTop: 8,
-    position: \"relative\",
+    position: "relative",
   },
   sliderFill: {
-    height: \"100%\",
+    height: "100%",
     borderRadius: 3,
     backgroundColor: Colors.primary,
   },
   sliderThumb: {
-    position: \"absolute\",
+    position: "absolute",
     top: -5,
     marginLeft: -7,
     width: 14,
@@ -698,26 +698,26 @@ const styles = StyleSheet.create({
     borderRadius: 7,
     backgroundColor: Colors.primary,
     borderWidth: 2,
-    borderColor: \"#FFFFFF\",
+    borderColor: "#FFFFFF",
   },
-  sliderBtnRow: { flexDirection: \"row\", justifyContent: \"flex-end\", gap: 8, marginTop: 6 },
+  sliderBtnRow: { flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 6 },
   stepBtn: {
     width: 26,
     height: 26,
     borderRadius: 13,
     backgroundColor: Colors.primaryFaint,
-    alignItems: \"center\",
-    justifyContent: \"center\",
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   noteCard: {
-    flexDirection: \"row\",
+    flexDirection: "row",
     gap: 10,
-    backgroundColor: \"#FFE6EE\",
+    backgroundColor: "#FFE6EE",
     borderRadius: 14,
     padding: 14,
     marginTop: 14,
   },
   noteText: { flex: 1, color: Colors.primary, fontSize: 12, lineHeight: 17 },
-  noteHead: { fontWeight: \"800\" },
+  noteHead: { fontWeight: "800" },
 });
