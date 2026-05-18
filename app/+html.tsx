@@ -1,38 +1,45 @@
-import { ScrollViewStyleReset } from 'expo-router/html';
+// @ts-nocheck
+import { ScrollViewStyleReset } from "expo-router/html";
+import type { PropsWithChildren } from "react";
 
-// This file is web-only and used to configure the root HTML for every
-// web page during static rendering.
-// The contents of this function only run in Node.js environments and
-// do not have access to the DOM or browser APIs.
-export default function Root({ children }: { children: React.ReactNode }) {
+export default function Root({ children }: PropsWithChildren) {
   return (
-    <html lang="en">
+    <html lang="en" style={{ height: "100%" }}>
       <head>
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-
-        {/* 
-          Disable body scrolling on web. This makes ScrollView components work closer to how they do on native. 
-          However, body scrolling is often nice to have for mobile web. If you want to enable it, remove this line.
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, shrink-to-fit=no"
+        />
+        {/*
+          Disable body scrolling on web to make ScrollView components work correctly.
+          If you want to enable scrolling, remove `ScrollViewStyleReset` and
+          set `overflow: auto` on the body style below.
         */}
         <ScrollViewStyleReset />
-
-        {/* Using raw CSS styles as an escape-hatch to ensure the background color never flickers in dark-mode. */}
-        <style dangerouslySetInnerHTML={{ __html: responsiveBackground }} />
-        {/* Add any additional <head> elements that you want globally available on web... */}
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              body > div:first-child { position: fixed !important; top: 0; left: 0; right: 0; bottom: 0; }
+              [role="tablist"] [role="tab"] * { overflow: visible !important; }
+              [role="heading"], [role="heading"] * { overflow: visible !important; }
+            `,
+          }}
+        />
       </head>
-      <body>{children}</body>
+      <body
+        style={{
+          margin: 0,
+          height: "100%",
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        {children}
+      </body>
     </html>
   );
 }
 
-const responsiveBackground = `
-body {
-  background-color: #fff;
-}
-@media (prefers-color-scheme: dark) {
-  body {
-    background-color: #000;
-  }
-}`;
