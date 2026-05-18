@@ -6,36 +6,36 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  Modal,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-
 import { Colors } from "@/src/constants/colors";
-import {
-  profileMock,
-  industryOptions,
-  eventsPerYearOptions,
-} from "@/src/constants/mockData";
+import { userMock } from "@/src/constants/mockData";
+
+const INDUSTRIES = [
+  "Photography",
+  "Videography",
+  "Event Planning",
+  "Wedding Planning",
+  "Corporate Events",
+  "Other",
+];
+
+const EVENTS_PER_YEAR = ["1-5", "5-10", "25-50", "50+"];
 
 export default function EditProfileScreen() {
   const router = useRouter();
-  const [fullName, setFullName] = useState(profileMock.fullName);
-  const [mobileNumber, setMobileNumber] = useState(profileMock.mobileNumber);
-  const [studioName, setStudioName] = useState(profileMock.studioName);
-  const [industry, setIndustry] = useState(profileMock.industry);
-  const [eventsPerYear, setEventsPerYear] = useState(profileMock.eventsPerYear);
-  const [showIndustryPicker, setShowIndustryPicker] = useState(false);
+  const [fullName, setFullName] = useState(userMock.fullName || "Sathiya");
+  const [mobile, setMobile] = useState("+91 98765 43210");
+  const [studioName, setStudioName] = useState("");
+  const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
+  const [showIndustryDropdown, setShowIndustryDropdown] = useState(false);
+  const [selectedEvents, setSelectedEvents] = useState<string | null>(null);
 
   const handleSave = () => {
-    console.log("Profile saved:", {
-      fullName,
-      mobileNumber,
-      studioName,
-      industry,
-      eventsPerYear,
-    });
+    // Save logic here
     router.back();
   };
 
@@ -48,26 +48,26 @@ export default function EditProfileScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
-            style={styles.backBtn}
             onPress={() => router.back()}
+            style={styles.backBtn}
             testID="back-button"
           >
-            <Ionicons name="chevron-back" size={22} color={Colors.textDark} />
+            <Ionicons name="chevron-back" size={24} color={Colors.textDark} />
           </TouchableOpacity>
-          <Text style={styles.title}>Edit Profile</Text>
+          <Text style={styles.headerTitle}>Edit Profile</Text>
           <View style={{ width: 40 }} />
         </View>
 
-        {/* Personal Details */}
+        {/* Personal Details Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="person" size={18} color={Colors.primary} />
+            <Ionicons name="person-outline" size={18} color={Colors.primary} />
             <Text style={styles.sectionTitle}>Personal Details</Text>
           </View>
 
           <View style={styles.card}>
             {/* Full Name */}
-            <View style={styles.inputGroup}>
+            <View style={styles.fieldGroup}>
               <Text style={styles.label}>Full Name</Text>
               <View style={styles.inputWrapper}>
                 <Ionicons
@@ -82,13 +82,12 @@ export default function EditProfileScreen() {
                   onChangeText={setFullName}
                   placeholder="Enter your full name"
                   placeholderTextColor={Colors.textFaint}
-                  testID="input-full-name"
                 />
               </View>
             </View>
 
             {/* Email Address */}
-            <View style={styles.inputGroup}>
+            <View style={styles.fieldGroup}>
               <Text style={styles.label}>Email Address</Text>
               <View style={[styles.inputWrapper, styles.inputDisabled]}>
                 <Ionicons
@@ -97,13 +96,18 @@ export default function EditProfileScreen() {
                   color={Colors.primary}
                   style={styles.inputIcon}
                 />
-                <Text style={styles.inputText}>{profileMock.email}</Text>
+                <TextInput
+                  style={[styles.input, styles.inputTextDisabled]}
+                  value={userMock.email}
+                  editable={false}
+                  placeholderTextColor={Colors.textFaint}
+                />
               </View>
               <Text style={styles.helperText}>Email cannot be changed</Text>
             </View>
 
             {/* Mobile Number */}
-            <View style={[styles.inputGroup, { marginBottom: 0 }]}>
+            <View style={styles.fieldGroup}>
               <Text style={styles.label}>Mobile Number</Text>
               <View style={styles.inputWrapper}>
                 <Ionicons
@@ -114,32 +118,31 @@ export default function EditProfileScreen() {
                 />
                 <TextInput
                   style={styles.input}
-                  value={mobileNumber}
-                  onChangeText={setMobileNumber}
-                  placeholder="+91 00000 00000"
-                  placeholderTextColor={Colors.textFaint}
+                  value={mobile}
+                  onChangeText={setMobile}
+                  placeholder="Enter mobile number"
                   keyboardType="phone-pad"
-                  testID="input-mobile"
+                  placeholderTextColor={Colors.textFaint}
                 />
               </View>
             </View>
           </View>
         </View>
 
-        {/* Business Details */}
+        {/* Business Details Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="briefcase" size={18} color={Colors.primary} />
+            <Ionicons name="briefcase-outline" size={18} color={Colors.primary} />
             <Text style={styles.sectionTitle}>Business Details</Text>
           </View>
 
           <View style={styles.card}>
             {/* Studio Name */}
-            <View style={styles.inputGroup}>
+            <View style={styles.fieldGroup}>
               <Text style={styles.label}>Studio Name</Text>
               <View style={styles.inputWrapper}>
                 <Ionicons
-                  name="home-outline"
+                  name="business-outline"
                   size={18}
                   color={Colors.primary}
                   style={styles.inputIcon}
@@ -148,64 +151,87 @@ export default function EditProfileScreen() {
                   style={styles.input}
                   value={studioName}
                   onChangeText={setStudioName}
-                  placeholder="Your Studio Name"
+                  placeholder="Your Studio"
                   placeholderTextColor={Colors.textFaint}
-                  testID="input-studio-name"
                 />
               </View>
             </View>
 
-            {/* Industry */}
-            <View style={styles.inputGroup}>
+            {/* Industry Dropdown */}
+            <View style={styles.fieldGroup}>
               <Text style={styles.label}>Industry</Text>
               <TouchableOpacity
                 style={styles.inputWrapper}
-                onPress={() => setShowIndustryPicker(true)}
-                testID="industry-picker-button"
+                onPress={() => setShowIndustryDropdown(!showIndustryDropdown)}
+                activeOpacity={0.8}
               >
                 <Ionicons
-                  name="diamond-outline"
+                  name="pricetag-outline"
                   size={18}
                   color={Colors.primary}
                   style={styles.inputIcon}
                 />
                 <Text
                   style={[
-                    styles.inputText,
-                    !industry && { color: Colors.textFaint },
+                    styles.dropdownText,
+                    !selectedIndustry && styles.dropdownPlaceholder,
                   ]}
                 >
-                  {industry || "Select Industry"}
+                  {selectedIndustry || "Select Industry"}
                 </Text>
                 <Ionicons
-                  name="chevron-down"
+                  name={showIndustryDropdown ? "chevron-up" : "chevron-down"}
                   size={18}
                   color={Colors.textMuted}
                 />
               </TouchableOpacity>
+
+              {showIndustryDropdown && (
+                <View style={styles.dropdown}>
+                  {INDUSTRIES.map((industry) => (
+                    <TouchableOpacity
+                      key={industry}
+                      style={styles.dropdownItem}
+                      onPress={() => {
+                        setSelectedIndustry(industry);
+                        setShowIndustryDropdown(false);
+                      }}
+                    >
+                      <Text style={styles.dropdownItemText}>{industry}</Text>
+                      {selectedIndustry === industry && (
+                        <Ionicons
+                          name="checkmark"
+                          size={18}
+                          color={Colors.primary}
+                        />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
             </View>
 
             {/* Events Per Year */}
-            <View style={[styles.inputGroup, { marginBottom: 0 }]}>
+            <View style={styles.fieldGroup}>
               <Text style={styles.label}>Events Per Year</Text>
-              <View style={styles.eventsRow}>
-                {eventsPerYearOptions.map((option) => (
+              <View style={styles.chipContainer}>
+                {EVENTS_PER_YEAR.map((range) => (
                   <TouchableOpacity
-                    key={option}
+                    key={range}
                     style={[
-                      styles.eventBtn,
-                      eventsPerYear === option && styles.eventBtnActive,
+                      styles.chip,
+                      selectedEvents === range && styles.chipActive,
                     ]}
-                    onPress={() => setEventsPerYear(option)}
-                    testID={`event-option-${option}`}
+                    onPress={() => setSelectedEvents(range)}
+                    activeOpacity={0.7}
                   >
                     <Text
                       style={[
-                        styles.eventBtnText,
-                        eventsPerYear === option && styles.eventBtnTextActive,
+                        styles.chipText,
+                        selectedEvents === range && styles.chipTextActive,
                       ]}
                     >
-                      {option}
+                      {range}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -214,77 +240,35 @@ export default function EditProfileScreen() {
           </View>
         </View>
 
-        <View style={{ height: 120 }} />
+        {/* Bottom spacing for button */}
+        <View style={{ height: 140 }} />
       </ScrollView>
 
-      {/* Save Button */}
-      <View style={styles.footer}>
+      {/* Fixed Save Button */}
+      <View style={styles.bottomContainer}>
         <TouchableOpacity
-          style={styles.saveBtn}
+          style={styles.saveButton}
           onPress={handleSave}
           activeOpacity={0.85}
           testID="save-button"
         >
-          <Text style={styles.saveBtnText}>Save Changes</Text>
-          <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
+          <Text style={styles.saveButtonText}>Save Changes</Text>
+          <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
-
-      {/* Industry Picker Modal */}
-      <Modal
-        visible={showIndustryPicker}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowIndustryPicker(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select Industry</Text>
-              <TouchableOpacity
-                onPress={() => setShowIndustryPicker(false)}
-                testID="close-picker"
-              >
-                <Ionicons name="close" size={24} color={Colors.textDark} />
-              </TouchableOpacity>
-            </View>
-            <ScrollView>
-              {industryOptions.map((option) => (
-                <TouchableOpacity
-                  key={option}
-                  style={styles.modalOption}
-                  onPress={() => {
-                    setIndustry(option);
-                    setShowIndustryPicker(false);
-                  }}
-                  testID={`industry-${option}`}
-                >
-                  <Text style={styles.modalOptionText}>{option}</Text>
-                  {industry === option && (
-                    <Ionicons
-                      name="checkmark"
-                      size={20}
-                      color={Colors.primary}
-                    />
-                  )}
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.bgPinkSoft },
-  scroll: { paddingHorizontal: 20, paddingTop: 8 },
+  scroll: { paddingHorizontal: 20, paddingBottom: 20 },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 24,
+    paddingTop: 8,
+    paddingBottom: 16,
   },
   backBtn: {
     width: 40,
@@ -295,17 +279,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     shadowColor: Colors.shadow,
     shadowOpacity: 1,
-    shadowRadius: 6,
+    shadowRadius: 8,
     elevation: 2,
   },
-  title: {
+  headerTitle: {
     fontSize: 20,
-    fontWeight: "700",
+    fontWeight: "800",
     color: Colors.textDark,
-    letterSpacing: -0.3,
+    letterSpacing: -0.5,
   },
 
-  section: { marginBottom: 24 },
+  section: { marginTop: 16 },
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
@@ -314,23 +298,23 @@ const styles = StyleSheet.create({
     paddingLeft: 4,
   },
   sectionTitle: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "700",
     color: Colors.textDark,
-    letterSpacing: -0.2,
+    letterSpacing: -0.3,
   },
 
   card: {
     backgroundColor: "#FFFFFF",
     borderRadius: 18,
-    padding: 16,
+    padding: 18,
     shadowColor: Colors.shadow,
     shadowOpacity: 1,
     shadowRadius: 10,
     elevation: 2,
   },
 
-  inputGroup: { marginBottom: 18 },
+  fieldGroup: { marginBottom: 20 },
   label: {
     fontSize: 13,
     fontWeight: "600",
@@ -341,13 +325,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: Colors.bgPinkSoft,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingHorizontal: 14,
-    paddingVertical: 12,
-    minHeight: 48,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: "transparent",
   },
   inputDisabled: {
-    opacity: 0.7,
+    backgroundColor: "#F5F5F5",
   },
   inputIcon: { marginRight: 10 },
   input: {
@@ -356,50 +341,79 @@ const styles = StyleSheet.create({
     color: Colors.textDark,
     fontWeight: "500",
   },
-  inputText: {
+  inputTextDisabled: {
+    color: Colors.textMuted,
+  },
+  helperText: {
+    fontSize: 11,
+    color: Colors.primary,
+    marginTop: 6,
+    marginLeft: 4,
+    fontStyle: "italic",
+  },
+
+  dropdownText: {
     flex: 1,
     fontSize: 14,
     color: Colors.textDark,
     fontWeight: "500",
   },
-  helperText: {
-    fontSize: 11.5,
-    color: Colors.primary,
-    marginTop: 6,
-    marginLeft: 4,
+  dropdownPlaceholder: {
+    color: Colors.textFaint,
+  },
+  dropdown: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 14,
+    marginTop: 8,
+    shadowColor: Colors.shadow,
+    shadowOpacity: 1,
+    shadowRadius: 10,
+    elevation: 3,
+    overflow: "hidden",
+  },
+  dropdownItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.divider,
+  },
+  dropdownItemText: {
+    fontSize: 14,
+    color: Colors.textDark,
+    fontWeight: "500",
   },
 
-  eventsRow: {
+  chipContainer: {
     flexDirection: "row",
-    gap: 10,
     flexWrap: "wrap",
+    gap: 10,
   },
-  eventBtn: {
-    flex: 1,
-    minWidth: "22%",
+  chip: {
+    paddingHorizontal: 20,
     paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 12,
+    borderRadius: 20,
+    backgroundColor: Colors.bgPinkSoft,
     borderWidth: 1.5,
     borderColor: Colors.border,
-    backgroundColor: "#FFFFFF",
-    alignItems: "center",
   },
-  eventBtnActive: {
-    borderColor: Colors.primary,
+  chipActive: {
     backgroundColor: Colors.primarySoft,
+    borderColor: Colors.primary,
   },
-  eventBtnText: {
+  chipText: {
     fontSize: 13,
     fontWeight: "600",
-    color: Colors.textBody,
+    color: Colors.textMuted,
   },
-  eventBtnTextActive: {
+  chipTextActive: {
     color: Colors.primary,
     fontWeight: "700",
   },
 
-  footer: {
+  bottomContainer: {
     position: "absolute",
     bottom: 0,
     left: 0,
@@ -407,69 +421,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     backgroundColor: Colors.bgPinkSoft,
-    borderTopWidth: 1,
-    borderTopColor: Colors.border,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: -4 },
+    elevation: 5,
   },
-  saveBtn: {
+  saveButton: {
+    backgroundColor: Colors.primary,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: Colors.primary,
     paddingVertical: 16,
-    borderRadius: 28,
-    gap: 8,
+    borderRadius: 30,
+    gap: 10,
     shadowColor: Colors.primary,
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.4,
     shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
   },
-  saveBtnText: {
+  saveButtonText: {
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "700",
-    letterSpacing: 0.3,
-  },
-
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "flex-end",
-  },
-  modalContent: {
-    backgroundColor: "#FFFFFF",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingTop: 20,
-    paddingBottom: 40,
-    maxHeight: "70%",
-  },
-  modalHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: Colors.textDark,
-  },
-  modalOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.divider,
-  },
-  modalOptionText: {
-    fontSize: 15,
-    color: Colors.textDark,
-    fontWeight: "500",
+    letterSpacing: 0.5,
   },
 });

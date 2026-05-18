@@ -1,5 +1,5 @@
-import { StyleSheet } from \"react-native\";
-import { Colors } from \"@/src/constants/colors\";
+import { StyleSheet } from "react-native";
+import { Colors } from "@/src/constants/colors";
 
 // Common, reusable styles to keep screens lean and consistent.
 export const global = StyleSheet.create({

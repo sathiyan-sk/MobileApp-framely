@@ -8,11 +8,15 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+
 
 import { Colors } from "@/src/constants/colors";
 import { userMock, settingsGroups } from "@/src/constants/mockData";
 
 export default function SettingsScreen() {
+    const router = useRouter();
+
   return (
     <SafeAreaView style={styles.safe} edges={["top"]} testID="settings-screen">
       <ScrollView
@@ -38,6 +42,7 @@ export default function SettingsScreen() {
           activeOpacity={0.85}
           style={styles.userCard}
           testID="user-card"
+          onPress={() => router.push("edit-profile")}
         >
           <View style={styles.avatarCircle}>
             <Text style={styles.avatarLetter}>{userMock.initial}</Text>
@@ -104,8 +109,9 @@ export default function SettingsScreen() {
           </View>
         ))}
 
-        <View style={{ height: 110 }} />
-      </ScrollView>
+        {/* Extra bottom padding to prevent bottom nav from hiding content */}
+        <View style={{ height: 140 }} />      
+        </ScrollView>
     </SafeAreaView>
   );
 }
