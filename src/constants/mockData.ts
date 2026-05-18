@@ -323,7 +323,7 @@ export const settingsGroups = [
 // ──────────────────────────────────────────────────────────────────────────────
 // ANALYTICS MOCK  (shape mirrors what the Node API will return)
 // ──────────────────────────────────────────────────────────────────────────────
-export const analyticsMock = {
+export const analyticsData = {
   range: { from: "Mar 01, 2026", to: "Mar 30, 2026" },
   summary: [
     {

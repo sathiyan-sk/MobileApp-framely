@@ -1,5 +1,26 @@
 // Framely design tokens — single source of truth for colors.
 export const Colors = {
+    
+  primaryLight: '#FFE8F0',
+  background: '#F9F9F9',
+  white: '#FFFFFF',
+  black: '#1A1A1A',
+  gray: '#999999',
+  grayLight: '#E5E5E5',
+  grayDark: '#666666',
+  
+  // Status colors
+  live: '#4CAF50',
+  scheduled: '#FF9800',
+  completed: '#2196F3',
+  expired: '#F44336',
+  draft: '#9C27B0',
+  
+  // Stat card colors
+  statPink: '#FFE8F0',
+  statPurple: '#F0E8FF',
+  statOrange: '#FFF0E8',
+  statGreen: '#E8FFF0',
   // Surfaces
   bgPink: "#FCE9EE",
   bgPinkSoft: "#FDEFF4",

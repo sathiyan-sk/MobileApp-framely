@@ -1,11 +1,3 @@
-import PlaceholderScreen from "@/src/screens/PlaceholderScreen";
+import GuestScreen from "@/src/screens/GuestScreen";
 
-export default function Guest() {
-  return (
-    <PlaceholderScreen
-      title="Guest"
-      subtitle="Guest management coming soon"
-      icon="person-outline"
-    />
-  );
-}
+export default GuestScreen;

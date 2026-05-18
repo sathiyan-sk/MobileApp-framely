@@ -1,11 +1,2 @@
-import PlaceholderScreen from "@/src/screens/PlaceholderScreen";
-
-export default function Events() {
-  return (
-    <PlaceholderScreen
-      title="Events"
-      subtitle="Your events will live here"
-      icon="calendar-outline"
-    />
-  );
-}
+import EventsScreen from "@/src/screens/EventsScreen";
+export default EventsScreen;

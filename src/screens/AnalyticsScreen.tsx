@@ -31,10 +31,10 @@ export default function AnalyticsScreen() {
           <TouchableOpacity
             onPress={() => router.back()}
             style={styles.backBtn}
-            testID="analytics-back\"
+            testID="analytics-back"
             activeOpacity={0.7}
           >
-            <Ionicons name="chevron-back\" size={22} color={Colors.primary} />
+            <Ionicons name="chevron-back" size={22} color={Colors.primary} />
           </TouchableOpacity>
           <View style={styles.avatarChip}>
             <Text style={styles.avatarChipText}>
@@ -51,11 +51,7 @@ export default function AnalyticsScreen() {
           activeOpacity={0.85}
           testID="date-range"
         >
-          <Ionicons
-            name="calendar-outline"
-            size={16}
-            color={Colors.primary}
-          />
+          <Ionicons name="calendar-outline" size={16} color={Colors.primary} />
           <Text style={styles.rangeText}>{analyticsData.range}</Text>
           <Ionicons name="chevron-down" size={16} color={Colors.primary} />
         </TouchableOpacity>
@@ -99,22 +95,13 @@ export default function AnalyticsScreen() {
                   style={styles.statCard}
                   testID={`stat-${s.id}`}
                 >
-                  <View
-                    style={[
-                      styles.statIcon,
-                      { backgroundColor: s.tintSoft },
-                    ]}
-                  >
+                  <View style={[styles.statIcon, { backgroundColor: s.tintSoft }]}>
                     <Ionicons name={s.icon} size={18} color={s.tint} />
                   </View>
                   <Text style={styles.statLabel}>{s.label}</Text>
                   <Text style={styles.statValue}>{s.value}</Text>
                   <View style={styles.statFoot}>
-                    <Ionicons
-                      name="trending-up"
-                      size={11}
-                      color={Colors.textMuted}
-                    />
+                    <Ionicons name="trending-up" size={11} color={Colors.textMuted} />
                     <Text style={styles.statFootText}>
                       {s.delta} {s.deltaLabel}
                     </Text>
@@ -132,14 +119,9 @@ export default function AnalyticsScreen() {
                   <Text style={styles.chipText}>
                     {analyticsData.activityOverTime.metricLabel}
                   </Text>
-                  <Ionicons
-                    name="chevron-down"
-                    size={12}
-                    color={Colors.textMuted}
-                  />
+                  <Ionicons name="chevron-down" size={12} color={Colors.textMuted} />
                 </View>
               </View>
-
               <LineChart
                 points={analyticsData.activityOverTime.points}
                 maxY={analyticsData.activityOverTime.maxY}
@@ -149,18 +131,14 @@ export default function AnalyticsScreen() {
             {/* Activity by Event */}
             <View style={styles.chartCard} testID="chart-by-event">
               <Text style={styles.chartTitle}>Activity by Event</Text>
-
               <View style={styles.legendRow}>
                 {analyticsData.activityByEvent.legend.map((l) => (
                   <View key={l.id} style={styles.legendItem}>
-                    <View
-                      style={[styles.legendDot, { backgroundColor: l.color }]}
-                    />
+                    <View style={[styles.legendDot, { backgroundColor: l.color }]} />
                     <Text style={styles.legendLabel}>{l.label}</Text>
                   </View>
                 ))}
               </View>
-
               <BarChart
                 events={analyticsData.activityByEvent.events}
                 maxY={analyticsData.activityByEvent.maxY}
@@ -185,12 +163,8 @@ export default function AnalyticsScreen() {
               {analyticsData.activityByEvent.events.map((e) => (
                 <View key={e.id} style={styles.tableRow}>
                   <View style={[styles.tableCell, { flex: 2 }]}>
-                    <View
-                      style={[styles.rowDot, { backgroundColor: e.color }]}
-                    />
-                    <Text style={styles.rowLabel} numberOfLines={1}>
-                      {e.label}
-                    </Text>
+                    <View style={[styles.rowDot, { backgroundColor: e.color }]} />
+                    <Text style={styles.rowLabel} numberOfLines={1}>{e.label}</Text>
                   </View>
                   <Text style={styles.tableNum}>{e.visit}</Text>
                   <Text style={styles.tableNum}>{e.view}</Text>
@@ -237,17 +211,8 @@ function TabBtn({
       onPress={onPress}
       testID={testID}
     >
-      <Ionicons
-        name={icon}
-        size={16}
-        color={active ? Colors.primary : Colors.textMuted}
-      />
-      <Text
-        style={[
-          styles.tabLabel,
-          active && { color: Colors.primary, fontWeight: "800" },
-        ]}
-      >
+      <Ionicons name={icon} size={16} color={active ? Colors.primary : Colors.textMuted} />
+      <Text style={[styles.tabLabel, active && { color: Colors.primary, fontWeight: "800" }]}>
         {label}
       </Text>
       {active && <View style={styles.tabUnderline} />}
@@ -256,7 +221,6 @@ function TabBtn({
 }
 
 // ----- Charts (lightweight, no external libs) -----
-
 function LineChart({
   points,
   maxY,
@@ -265,14 +229,11 @@ function LineChart({
   maxY: number;
 }) {
   const H = 130;
-  const W = 280; // logical width, scaled by flex
   const yTicks = [maxY, maxY * 0.8, maxY * 0.6, maxY * 0.4, maxY * 0.2, 0];
-
-  // Compute pixel positions for each point (relative coords).
   const stepX = 100 / Math.max(1, points.length - 1);
   const coords = points.map((p, i) => ({
     xPct: i * stepX,
-    yPct: 100 - (p.value / maxY) * 100,
+    yPct: maxY > 0 ? 100 - (p.value / maxY) * 100 : 100,
     label: p.label,
     value: p.value,
   }));
@@ -282,25 +243,16 @@ function LineChart({
       <View style={{ flexDirection: "row", height: H }}>
         <View style={styles.yAxis}>
           {yTicks.map((t, i) => (
-            <Text key={i} style={styles.yTick}>
-              {t.toFixed(1)}
-            </Text>
+            <Text key={i} style={styles.yTick}>{t.toFixed(1)}</Text>
           ))}
         </View>
-
         <View style={styles.plot}>
-          {/* horizontal grid lines */}
           {yTicks.map((_, i) => (
             <View
               key={i}
-              style={[
-                styles.gridLine,
-                { top: (i / (yTicks.length - 1)) * 100 + "%" } as any,
-              ]}
+              style={[styles.gridLine, { top: `${(i / (yTicks.length - 1)) * 100}%` } as any]}
             />
           ))}
-
-          {/* line segments (using rotated thin views) */}
           {coords.slice(0, -1).map((p, i) => {
             const n = coords[i + 1];
             return (
@@ -313,28 +265,17 @@ function LineChart({
               />
             );
           })}
-
-          {/* dots */}
           {coords.map((p, i) => (
             <View
               key={i}
-              style={[
-                styles.dot,
-                {
-                  left: `${p.xPct}%`,
-                  top: `${p.yPct}%`,
-                },
-              ]}
+              style={[styles.dot, { left: `${p.xPct}%`, top: `${p.yPct}%` } as any]}
             />
           ))}
         </View>
       </View>
-
       <View style={styles.xAxis}>
         {points.map((p, i) => (
-          <Text key={i} style={styles.xTick}>
-            {p.label}
-          </Text>
+          <Text key={i} style={styles.xTick}>{p.label}</Text>
         ))}
       </View>
     </View>
@@ -342,19 +283,10 @@ function LineChart({
 }
 
 function LineSegment({
-  x1Pct,
-  y1Pct,
-  x2Pct,
-  y2Pct,
+  x1Pct, y1Pct, x2Pct, y2Pct,
 }: {
-  x1Pct: number;
-  y1Pct: number;
-  x2Pct: number;
-  y2Pct: number;
+  x1Pct: number; y1Pct: number; x2Pct: number; y2Pct: number;
 }) {
-  // We'll render line via an absolutely positioned <View> with
-  // computed width + rotation. Layout-relative percentages are
-  // approximated using a fixed reference width (the plot stretches).
   const REF_W = 280;
   const REF_H = 130;
   const x1 = (x1Pct / 100) * REF_W;
@@ -371,16 +303,12 @@ function LineSegment({
       pointerEvents="none"
       style={{
         position: "absolute",
-        left: `${x1Pct}%`,
-        top: `${y1Pct}%`,
+        left: `${x1Pct}%` as any,
+        top: `${y1Pct}%` as any,
         width: length,
         height: 2,
         backgroundColor: Colors.primary,
-        transform: [
-          { translateY: -1 },
-          { rotateZ: `${angle}deg` },
-          { translateX: 0 },
-        ],
+        transform: [{ translateY: -1 }, { rotateZ: `${angle}deg` }],
         transformOrigin: "0% 50%" as any,
         borderRadius: 1,
       }}
@@ -395,7 +323,7 @@ function BarChart({
   events: {
     id: string;
     label: string;
-    icon: keyof typeof import("@expo/vector-icons").Ionicons.glyphMap;
+    icon: keyof typeof Ionicons.glyphMap;
     color: string;
     visit: number;
     view: number;
@@ -405,81 +333,43 @@ function BarChart({
 }) {
   const H = 150;
   const yTicks = [650, 520, 390, 260, 130, 0];
+  const safeMax = maxY || 1;
 
   return (
     <View style={{ marginTop: 12 }}>
       <View style={{ flexDirection: "row", height: H }}>
         <View style={styles.yAxis}>
           {yTicks.map((t, i) => (
-            <Text key={i} style={styles.yTick}>
-              {t}
-            </Text>
+            <Text key={i} style={styles.yTick}>{t}</Text>
           ))}
         </View>
-
         <View style={styles.plot}>
           {yTicks.map((_, i) => (
             <View
               key={i}
-              style={[
-                styles.gridLine,
-                { top: (i / (yTicks.length - 1)) * 100 + "%" } as any,
-              ]}
+              style={[styles.gridLine, { top: `${(i / (yTicks.length - 1)) * 100}%` } as any]}
             />
           ))}
-
           <View style={styles.barRow}>
             {events.map((e) => (
               <View key={e.id} style={styles.barGroup}>
                 <View style={styles.bars}>
-                  <View
-                    style={[
-                      styles.bar,
-                      {
-                        height: `${(e.visit / maxY) * 100}%`,
-                        backgroundColor: "#EC407A",
-                      },
-                    ]}
-                  />
-                  <View
-                    style={[
-                      styles.bar,
-                      {
-                        height: `${(e.view / maxY) * 100}%`,
-                        backgroundColor: "#F59E0B",
-                      },
-                    ]}
-                  />
-                  <View
-                    style={[
-                      styles.bar,
-                      {
-                        height: `${(e.download / maxY) * 100}%`,
-                        backgroundColor: "#6366F1",
-                      },
-                    ]}
-                  />
+                  <View style={[styles.bar, { height: `${(e.visit / safeMax) * 100}%`, backgroundColor: "#EC407A" }]} />
+                  <View style={[styles.bar, { height: `${(e.view / safeMax) * 100}%`, backgroundColor: "#F59E0B" }]} />
+                  <View style={[styles.bar, { height: `${(e.download / safeMax) * 100}%`, backgroundColor: "#6366F1" }]} />
                 </View>
               </View>
             ))}
           </View>
         </View>
       </View>
-
       <View style={styles.barXAxis}>
         {events.map((e) => (
           <View key={e.id} style={styles.barXItem}>
-            <View
-              style={[
-                styles.barXIcon,
-                { backgroundColor: e.color + "22" },
-              ]}
-            >
+            <View style={[styles.barXIcon, { backgroundColor: e.color + "22" }]}>
               <Ionicons name={e.icon} size={14} color={e.color} />
             </View>
-            <Text style={styles.barXText} numberOfLines={1}>
-              {e.label}
-            </Text>
+            <Text style={styles.barXText} numberOfLines={1}>{e.label}</Text>
           </View>
         ))}
       </View>
@@ -517,11 +407,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  avatarChipText: {
-    color: Colors.primary,
-    fontWeight: "800",
-    fontSize: 14,
-  },
+  avatarChipText: { color: Colors.primary, fontWeight: "800", fontSize: 14 },
   title: {
     flex: 1,
     fontSize: 22,
@@ -532,10 +418,10 @@ const styles = StyleSheet.create({
   },
 
   rangePill: {
-    flexDirection: \"row\",
-    alignItems: \"center\",
+    flexDirection: "row",
+    alignItems: "center",
     gap: 10,
-    backgroundColor: \"#FFFFFF\",
+    backgroundColor: "#FFFFFF",
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderRadius: 30,
@@ -545,12 +431,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
   },
-  rangeText: {
-    flex: 1,
-    color: Colors.textBody,
-    fontSize: 13,
-    fontWeight: "500",
-  },
+  rangeText: { flex: 1, color: Colors.textBody, fontSize: 13, fontWeight: "500" },
 
   tabs: {
     flexDirection: "row",
@@ -587,12 +468,7 @@ const styles = StyleSheet.create({
     marginTop: 18,
     marginBottom: 10,
   },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: Colors.textDark,
-    letterSpacing: -0.4,
-  },
+  sectionTitle: { fontSize: 22, fontWeight: "800", color: Colors.textDark, letterSpacing: -0.4 },
 
   statCard: {
     width: 150,
@@ -613,19 +489,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   statLabel: { fontSize: 12, color: Colors.textMuted, fontWeight: "600" },
-  statValue: {
-    fontSize: 26,
-    fontWeight: "800",
-    color: Colors.textDark,
-    letterSpacing: -0.5,
-    marginTop: 2,
-  },
-  statFoot: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    marginTop: 6,
-  },
+  statValue: { fontSize: 26, fontWeight: "800", color: Colors.textDark, letterSpacing: -0.5, marginTop: 2 },
+  statFoot: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 6 },
   statFootText: { fontSize: 10.5, color: Colors.textMuted },
 
   chartCard: {
@@ -638,17 +503,8 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 2,
   },
-  rowBetween: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  chartTitle: {
-    fontSize: 17,
-    fontWeight: "800",
-    color: Colors.textDark,
-    letterSpacing: -0.3,
-  },
+  rowBetween: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  chartTitle: { fontSize: 17, fontWeight: "800", color: Colors.textDark, letterSpacing: -0.3 },
   chartChip: {
     flexDirection: "row",
     alignItems: "center",
@@ -661,20 +517,10 @@ const styles = StyleSheet.create({
   chipDot: { width: 8, height: 8, borderRadius: 4 },
   chipText: { fontSize: 12, color: Colors.textBody, fontWeight: "600" },
 
-  yAxis: {
-    width: 32,
-    justifyContent: "space-between",
-    paddingVertical: 2,
-  },
+  yAxis: { width: 32, justifyContent: "space-between", paddingVertical: 2 },
   yTick: { fontSize: 10, color: Colors.textFaint, textAlign: "right" },
   plot: { flex: 1, position: "relative", marginLeft: 6 },
-  gridLine: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    height: 1,
-    backgroundColor: "#F4E6EB",
-  },
+  gridLine: { position: "absolute", left: 0, right: 0, height: 1, backgroundColor: "#F4E6EB" },
   dot: {
     position: "absolute",
     width: 8,
@@ -684,12 +530,7 @@ const styles = StyleSheet.create({
     marginLeft: -4,
     marginTop: -4,
   },
-  xAxis: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 6,
-    paddingLeft: 38,
-  },
+  xAxis: { flexDirection: "row", justifyContent: "space-between", marginTop: 6, paddingLeft: 38 },
   xTick: { fontSize: 10, color: Colors.textMuted },
 
   legendRow: { flexDirection: "row", gap: 14, marginTop: 8, flexWrap: "wrap" },
@@ -705,27 +546,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   barGroup: { flex: 1, alignItems: "center", height: "100%", paddingHorizontal: 4 },
-  bars: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    gap: 3,
-    height: "100%",
-  },
+  bars: { flexDirection: "row", alignItems: "flex-end", gap: 3, height: "100%" },
   bar: { width: 8, borderTopLeftRadius: 4, borderTopRightRadius: 4 },
 
-  barXAxis: {
-    flexDirection: "row",
-    marginTop: 8,
-    paddingLeft: 38,
-  },
+  barXAxis: { flexDirection: "row", marginTop: 8, paddingLeft: 38 },
   barXItem: { flex: 1, alignItems: "center", gap: 4 },
-  barXIcon: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  barXIcon: { width: 24, height: 24, borderRadius: 6, alignItems: "center", justifyContent: "center" },
   barXText: { fontSize: 10, color: Colors.textBody, textAlign: "center" },
 
   tableCard: {
@@ -745,12 +571,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.divider,
   },
-  tableHeadCell: {
-    fontSize: 11,
-    color: Colors.textMuted,
-    fontWeight: "700",
-    letterSpacing: 0.5,
-  },
+  tableHeadCell: { fontSize: 11, color: Colors.textMuted, fontWeight: "700", letterSpacing: 0.5 },
   tableHeadIcon: { alignItems: "center" },
   tableRow: {
     flexDirection: "row",
@@ -762,13 +583,7 @@ const styles = StyleSheet.create({
   tableCell: { flexDirection: "row", alignItems: "center", gap: 8 },
   rowDot: { width: 8, height: 8, borderRadius: 4 },
   rowLabel: { fontSize: 13, color: Colors.textBody, fontWeight: "600" },
-  tableNum: {
-    flex: 1,
-    fontSize: 13,
-    color: Colors.textBody,
-    textAlign: "center",
-    fontWeight: "600",
-  },
+  tableNum: { flex: 1, fontSize: 13, color: Colors.textBody, textAlign: "center", fontWeight: "600" },
 
   emptyCard: {
     backgroundColor: "#FFFFFF",
@@ -790,15 +605,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 12,
   },
-  emptyTitle: {
-    fontSize: 16,
-    fontWeight: "800",
-    color: Colors.textDark,
-  },
-  emptySub: {
-    color: Colors.textMuted,
-    fontSize: 12.5,
-    textAlign: "center",
-    marginTop: 4,
-  },
+  emptyTitle: { fontSize: 16, fontWeight: "800", color: Colors.textDark },
+  emptySub: { color: Colors.textMuted, fontSize: 12.5, textAlign: "center", marginTop: 4 },
 });

@@ -1,0 +1,258 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  SafeAreaView,
+} from 'react-native';
+import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import { Colors } from '../constants/colors';
+import { EventListItem } from '../components/EventListItem';
+import { myEvents } from '../constants/mockData';
+import { router } from 'expo-router';
+
+
+type FilterType = 'all' | 'live' | 'scheduled' | 'drafts';
+
+export default function EventsScreen() {
+  const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filters = [
+    { key: 'all', label: 'All', count: 12 },
+    { key: 'live', label: 'Live', count: 3 },
+    { key: 'scheduled', label: 'Scheduled', count: 4 },
+    { key: 'drafts', label: 'Drafts', count: 0 },
+  ];
+
+  const filteredEvents = myEvents.filter((event) => {
+    if (selectedFilter === 'all') return true;
+    return event.status === selectedFilter || 
+           (selectedFilter === 'drafts' && event.status === 'draft');
+  });
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={24} color={Colors.black} />
+          </TouchableOpacity>
+          <View style={styles.headerCenter}>
+            <Text style={styles.headerTitle}>Events</Text>
+            <Text style={styles.headerSubtitle}>All your events in one place</Text>
+          </View>
+          <View style={styles.headerRight}>
+            <TouchableOpacity style={styles.iconButton}>
+              <Ionicons name="search" size={22} color={Colors.black} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconButton}>
+              <Ionicons name="filter" size={22} color={Colors.primary} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <MaterialCommunityIcons name="magnify" size={20} color={Colors.gray} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search events by name or date..."
+            placeholderTextColor={Colors.gray}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
+
+        {/* Filter Tabs */}
+        <View style={styles.filterContainer}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterScroll}
+          >
+            {filters.map((filter) => (
+              <TouchableOpacity
+                key={filter.key}
+                style={[
+                  styles.filterTab,
+                  selectedFilter === filter.key && styles.filterTabActive,
+                ]}
+                onPress={() => setSelectedFilter(filter.key as FilterType)}
+              >
+                <Text
+                  style={[
+                    styles.filterText,
+                    selectedFilter === filter.key && styles.filterTextActive,
+                  ]}
+                >
+                  {filter.label}
+                </Text>
+                {filter.count > 0 && (
+                  <View
+                    style={[
+                      styles.filterBadge,
+                      selectedFilter === filter.key && styles.filterBadgeActive,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.filterBadgeText,
+                        selectedFilter === filter.key && styles.filterBadgeTextActive,
+                      ]}
+                    >
+                      {filter.count}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+          <TouchableOpacity style={styles.sortButton}>
+            <MaterialCommunityIcons name="menu-down" size={16} color={Colors.primary} />
+            <Text style={styles.sortText}>Newest</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Events List */}
+        <ScrollView
+          style={styles.eventsList}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.eventsListContent}
+        >
+          {filteredEvents.map((event) => (
+            <EventListItem location={''} photos={0} status={'live'} key={event.id} {...event} />
+          ))}
+          <View style={{ height: 100 }} />
+        </ScrollView>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  container: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  headerCenter: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: Colors.black,
+  },
+  headerSubtitle: {
+    fontSize: 13,
+    color: Colors.gray,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  iconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.white,
+    marginHorizontal: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: Colors.black,
+  },
+  filterContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 16,
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  filterScroll: {
+    gap: 8,
+  },
+  filterTab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: Colors.white,
+    gap: 6,
+  },
+  filterTabActive: {
+    backgroundColor: Colors.primary,
+  },
+  filterText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: Colors.black,
+  },
+  filterTextActive: {
+    color: Colors.white,
+  },
+  filterBadge: {
+    backgroundColor: Colors.grayLight,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    minWidth: 24,
+    alignItems: 'center',
+  },
+  filterBadgeActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  filterBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.black,
+  },
+  filterBadgeTextActive: {
+    color: Colors.white,
+  },
+  sortButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 'auto',
+  },
+  sortText: {
+    fontSize: 14,
+    color: Colors.primary,
+    fontWeight: '500',
+  },
+  eventsList: {
+    flex: 1,
+    marginTop: 16,
+  },
+  eventsListContent: {
+    paddingBottom: 20,
+  },
+});
