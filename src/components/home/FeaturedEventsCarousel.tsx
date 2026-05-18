@@ -8,7 +8,7 @@ import {
   ViewToken,
 } from "react-native";
 import { Colors } from "@/src/constants/colors";
-import FeaturedEventCard from "./FeaturedEventsCarousel";
+import FeaturedEventCard from "./FeaturedEventCard";
 
 type FeaturedEvent = {
   id: string;
@@ -22,9 +22,6 @@ type FeaturedEvent = {
 };
 
 type Props = {
-  
-  width: number;
-
   events: FeaturedEvent[];
   // Card width — pass the available width from the parent (screen width minus horizontal padding).
   itemWidth: number;
@@ -62,7 +59,7 @@ export default function FeaturedEventsCarousel({ events, itemWidth }: Props) {
         data={events}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <FeaturedEventCard events={[]} itemWidth={0} {...item} width={itemWidth} />
+          <FeaturedEventCard {...item} width={itemWidth} />
         )}
         horizontal
         pagingEnabled

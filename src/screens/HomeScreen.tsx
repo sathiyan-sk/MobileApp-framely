@@ -6,8 +6,7 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
-    useWindowDimensions,
-
+  useWindowDimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -28,13 +27,15 @@ import StatCard from "@/src/components/home/StatCard";
 import FeaturedEventsCarousel from "@/src/components/home/FeaturedEventsCarousel";
 import EventCard from "@/src/components/home/EventCard";
 import SectionHeader from "@/src/components/home/SectionHeader";
-import events from "@/app/(tabs)/events";
 
 // Horizontal screen padding used by the ScrollView — keep in sync with styles.scroll.
 const SCREEN_PAD = 18;
 
 
 export default function HomeScreen() {
+  const { width: screenWidth } = useWindowDimensions();
+  const carouselItemWidth = screenWidth - SCREEN_PAD * 2;
+
   return (
     <SafeAreaView style={styles.safe} edges={["top"]} testID="home-screen">
       <ScrollView
@@ -89,7 +90,7 @@ export default function HomeScreen() {
         </View>
 
         {/* Featured event */}
-        <FeaturedEventsCarousel events={featuredEvents} itemWidth={useWindowDimensions().width - SCREEN_PAD * 2} width={0} />
+        <FeaturedEventsCarousel events={featuredEvents} itemWidth={carouselItemWidth} />
 
         {/* My Events */}
         <SectionHeader
