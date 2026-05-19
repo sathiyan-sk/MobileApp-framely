@@ -2,8 +2,6 @@
 // Image URLs use Unsplash so screens render even without local assets.
 // Settings items each carry an optional `route` that the Settings screen uses
 
-import { opacity } from "react-native-reanimated/lib/typescript/Colors";
-
 // for navigation. Keep this in sync with files under /app/frontend/app/.
 export const userMock = {
   name: "Sathya",
@@ -302,8 +300,8 @@ export const settingsGroups = [
         title: "My Plan",
         subtitle: "Manage your Pro plan",
         badge: "PRO PLAN",
-        route: "(tabs)/plan" as const,
-      },
+        route: "/(tabs)/plan" as const,
+        },
     ],
   },
   {
@@ -316,14 +314,14 @@ export const settingsGroups = [
         icon: "color-palette-outline" as const,
         title: "Branding & Theme",
         subtitle: "Logo, colors, fonts & themes",
-        route: "(tabs)/branding" as const,
-      },
+        route: "/(tabs)/branding" as const,
+              },
       {
         id: "events",
         icon: "calendar-outline" as const,
         title: "Events & Preferences",
         subtitle: "Default settings for events",
-        route: "(tabs)/events" as const,
+        route: "/(tabs)/events" as const,
       },
       {
         id: "analytics",

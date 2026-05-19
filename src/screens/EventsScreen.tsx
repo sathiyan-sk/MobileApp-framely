@@ -39,19 +39,23 @@ export default function EventsScreen() {
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
+          {/* <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color={Colors.black} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <View style={styles.headerCenter}>
             <Text style={styles.headerTitle}>Events</Text>
             <Text style={styles.headerSubtitle}>All your events in one place</Text>
           </View>
           <View style={styles.headerRight}>
-            <TouchableOpacity style={styles.iconButton}>
+            <TouchableOpacity style={styles.iconButton} testID="events-search-btn\">
               <Ionicons name="search" size={22} color={Colors.black} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton}>
-              <Ionicons name="filter" size={22} color={Colors.primary} />
+                       <TouchableOpacity
+              style={[styles.iconButton, styles.createButton]}
+              onPress={() => router.push('/(tabs)/newEvent' as any)}
+              testID="events-create-btn"
+            >
+              <Ionicons name="add" size={24} color={Colors.white} />
             </TouchableOpacity>
           </View>
         </View>
@@ -181,6 +185,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+    createButton: {
+    backgroundColor: Colors.primary,
   },
   searchContainer: {
     flexDirection: 'row',

@@ -305,8 +305,7 @@ export default function CreateEvent() {
             testID="continue-btn"
             style={styles.continueBtn}
             activeOpacity={0.9}
-            onPress={() => router.push('/choose-design')}
-          >
+            onPress={() => router.push('/(tabs)/choose-template' as any)}          >
             <Text style={styles.continueText}>Continue to design</Text>
             <Ionicons name="sparkles" size={14} color="#fff" style={{ marginLeft: 8 }} />
             <Ionicons name="arrow-forward" size={16} color="#fff" style={{ marginLeft: 6 }} />

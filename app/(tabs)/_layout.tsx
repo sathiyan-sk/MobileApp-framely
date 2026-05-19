@@ -1,35 +1,38 @@
 import React, { useCallback } from "react";
-import { Alert, Platform, View } from "react-native";
-import { Tabs } from "expo-router";
+import { View } from "react-native";
+import { Tabs, useRouter } from "expo-router";
 
 import BottomTabBar from "@/src/components/BottomTabBar";
 import { Colors } from "@/src/constants/colors";
 
 export default function TabsLayout() {
-  const handleCreate = () => {
-    if (Platform.OS === "web") {
-      if (typeof window !== "undefined") {
-        window.alert("Create Event (coming soon)");
-      }
-    } else {
-      Alert.alert("Create Event", "This will open the create-event flow soon.");
-    }
-  };
+  const router = useRouter();
 
-  const TabBar = () => <BottomTabBar onCreate={handleCreate} />;
+  const handleCreate = useCallback(() => {
+    router.push("/(tabs)/newEvent");
+  }, [router]);
 
-  const renderTabBar = useCallback(() => <TabBar />, []);
+  const renderTabBar = useCallback(
+    () => <BottomTabBar onCreate={handleCreate} />,
+    [handleCreate],
+  );
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bgPink }}>
-      <Tabs
-        screenOptions={{ headerShown: false }}
-        tabBar={renderTabBar}
-      >
+      <Tabs screenOptions={{ headerShown: false }} tabBar={renderTabBar}>
+        {/* Tabs visible in the bottom bar */}
         <Tabs.Screen name="home" />
         <Tabs.Screen name="events" />
         <Tabs.Screen name="guest" />
         <Tabs.Screen name="settings" />
+
+        {/* Hidden screens — navigable, but not shown in the tab bar */}
+        <Tabs.Screen name="newEvent" options={{ href: null }} />
+        <Tabs.Screen name="choose-template" options={{ href: null }} />
+        <Tabs.Screen name="edit-profile" options={{ href: null }} />
+        <Tabs.Screen name="plan" options={{ href: null }} />
+        <Tabs.Screen name="branding" options={{ href: null }} />
+        <Tabs.Screen name="analytics" options={{ href: null }} />
       </Tabs>
     </View>
   );
