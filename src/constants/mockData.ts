@@ -583,3 +583,81 @@ export const activePlanMock = {
   storageUsedGb: 0.05,
   storageTotalGb: 50,
 };
+
+// ──────────────────────────────────────────────────────────────────────────────
+// MY PLAN DATA (for MyPlanScreen.tsx)
+// ──────────────────────────────────────────────────────────────────────────────
+export const myPlanData = {
+  active: {
+    name: "Pro",
+    price: "Rs. 499",
+    unit: "/ month",
+    status: "ACTIVE",
+    photosUsed: 1662,
+    photosTotal: 50000,
+    storageUsedGB: 1.1,
+    storageTotalGB: 50,
+  },
+  plans: [
+    {
+      id: "starter",
+      name: "Starter",
+      tagline: "Forever free",
+      price: null,
+      unit: "/ month",
+      icon: "leaf-outline" as const,
+      accent: "#EC407A",
+      accentSoft: "#FCE4EC",
+      bestValue: false,
+      features: [
+        "10,000 photos",
+        "10 GB storage",
+        "Face recognition",
+        "Guest QR code",
+        "Unlimited events",
+      ],
+      cta: { label: "Current plan", variant: "outline" as const },
+    },
+    {
+      id: "pro",
+      name: "Pro",
+      tagline: "For growing studios",
+      price: "Rs. 499",
+      unit: "/ month",
+      icon: "diamond-outline" as const,
+      accent: "#F59E0B",
+      accentSoft: "#FFF4E0",
+      bestValue: true,
+      features: [
+        "50,000 photos",
+        "50 GB storage",
+        "AI face recognition",
+        "Guest QR code",
+        "WhatsApp sharing",
+        "Priority processing",
+      ],
+      cta: { label: "Active", variant: "gradient" as const },
+    },
+    {
+      id: "elite",
+      name: "Elite",
+      tagline: "For professional studios",
+      price: "Rs. 999",
+      unit: "/ month",
+      icon: "ribbon-outline" as const,
+      accent: "#7C3AED",
+      accentSoft: "#EEF0FF",
+      bestValue: false,
+      features: [
+        "1,00,000 photos",
+        "100 GB storage",
+        "AI face recognition",
+        "Guest QR code",
+        "WhatsApp sharing",
+        "Priority processing",
+        "Dedicated support",
+      ],
+      cta: { label: "Upgrade to Elite", variant: "purple" as const },
+    },
+  ],
+};  

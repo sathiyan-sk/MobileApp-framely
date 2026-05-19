@@ -84,6 +84,11 @@ export default function SettingsScreen() {
                   ]}
                   activeOpacity={0.7}
                   testID={`setting-${item.id}`}
+                                    onPress={() => {
+                    if ('route' in item && item.route) {
+                      router.push(item.route as any);
+                    }
+                  }}
                 >
                   <View style={styles.itemIcon}>
                     <Ionicons name={item.icon} size={18} color={Colors.primary} />
