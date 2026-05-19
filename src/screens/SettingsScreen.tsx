@@ -42,7 +42,7 @@ export default function SettingsScreen() {
           activeOpacity={0.85}
           style={styles.userCard}
           testID="user-card"
-          onPress={() => router.push("edit-profile")}
+          onPress={() => router.push("/(tabs)/edit-profile" as any)}
         >
           <View style={styles.avatarCircle}>
             <Text style={styles.avatarLetter}>{userMock.initial}</Text>
@@ -92,7 +92,7 @@ export default function SettingsScreen() {
                     <Text style={styles.itemTitle}>{item.title}</Text>
                     <Text style={styles.itemSubtitle}>{item.subtitle}</Text>
                   </View>
-                  {item.badge ? (
+                  {'badge' in item && item.badge ? (
                     <View style={styles.itemBadge}>
                       <Text style={styles.itemBadgeText}>{item.badge}</Text>
                     </View>

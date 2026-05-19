@@ -22,10 +22,10 @@ export default function EventsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const filters = [
-    { key: 'all', label: 'All', count: 12 },
-    { key: 'live', label: 'Live', count: 3 },
-    { key: 'scheduled', label: 'Scheduled', count: 4 },
-    { key: 'drafts', label: 'Drafts', count: 0 },
+    { key: 'all', label: 'All', count: myEvents.length },
+    { key: 'live', label: 'Live', count: myEvents.filter(e => e.status === 'live').length },
+    { key: 'scheduled', label: 'Scheduled', count: myEvents.filter(e => e.status === 'scheduled').length },
+    { key: 'drafts', label: 'Drafts', count: myEvents.filter(e => e.status === 'draft').length },
   ];
 
   const filteredEvents = myEvents.filter((event) => {
@@ -125,7 +125,15 @@ export default function EventsScreen() {
           contentContainerStyle={styles.eventsListContent}
         >
           {filteredEvents.map((event) => (
-            <EventListItem location={''} photos={0} status={'live'} key={event.id} {...event} />
+            < EventListItem 
+              key={event.id} 
+              title={event.title}
+              location={event.location}
+              date={event.date}
+              photos={event.photos}
+              guests={event.guests}
+              status={event.status}
+              image={event.image} />
           ))}
           <View style={{ height: 100 }} />
         </ScrollView>
