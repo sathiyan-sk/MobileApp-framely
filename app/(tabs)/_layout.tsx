@@ -4,6 +4,7 @@ import { Tabs, useRouter } from "expo-router";
 
 import BottomTabBar from "@/src/components/BottomTabBar";
 import { Colors } from "@/src/constants/colors";
+import { ScrollProvider } from "@/src/context/ScrollContext";
 
 export default function TabsLayout() {
   const router = useRouter();
@@ -18,12 +19,13 @@ export default function TabsLayout() {
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: Colors.bgPink }}>
-      <Tabs screenOptions={{ headerShown: false }} tabBar={renderTabBar}>
-        {/* Tabs visible in the bottom bar */}
-        <Tabs.Screen name="home" />
-        <Tabs.Screen name="events" />
-        <Tabs.Screen name="guest" />
+    <ScrollProvider>
+      <View style={{ flex: 1, backgroundColor: Colors.bgPink }}>
+        <Tabs screenOptions={{ headerShown: false }} tabBar={renderTabBar}>
+          {/* Tabs visible in the bottom bar */}
+          <Tabs.Screen name="home" />
+          <Tabs.Screen name="events" />
+          <Tabs.Screen name="guest" />
         <Tabs.Screen name="settings" />
 
         {/* Hidden screens — navigable, but not shown in the tab bar */}
@@ -35,5 +37,6 @@ export default function TabsLayout() {
         <Tabs.Screen name="analytics" options={{ href: null }} />
       </Tabs>
     </View>
+    </ScrollProvider>
   );
 }

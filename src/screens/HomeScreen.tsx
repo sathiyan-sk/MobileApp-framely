@@ -27,6 +27,8 @@ import StatCard from "@/src/components/home/StatCard";
 import FeaturedEventsCarousel from "@/src/components/home/FeaturedEventsCarousel";
 import EventCard from "@/src/components/home/EventCard";
 import SectionHeader from "@/src/components/home/SectionHeader";
+import { useScroll } from "@/src/context/ScrollContext";
+
 
 // Horizontal screen padding used by the ScrollView — keep in sync with styles.scroll.
 const SCREEN_PAD = 18;
@@ -35,12 +37,16 @@ const SCREEN_PAD = 18;
 export default function HomeScreen() {
   const { width: screenWidth } = useWindowDimensions();
   const carouselItemWidth = screenWidth - SCREEN_PAD * 2;
+    const { onScroll } = useScroll();
+
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]} testID="home-screen">
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
       >
         {/* Header */}
         <View style={styles.header}>

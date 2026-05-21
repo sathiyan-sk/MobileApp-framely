@@ -13,6 +13,7 @@ import { Colors } from '../constants/colors';
 import { EventListItem } from '../components/EventListItem';
 import { myEvents } from '../constants/mockData';
 import { router } from 'expo-router';
+import { useScroll } from '../context/ScrollContext';
 
 
 type FilterType = 'all' | 'live' | 'scheduled' | 'drafts';
@@ -20,6 +21,7 @@ type FilterType = 'all' | 'live' | 'scheduled' | 'drafts';
 export default function EventsScreen() {
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
+    const { onScroll } = useScroll();
 
   const filters = [
     { key: 'all', label: 'All', count: myEvents.length },
@@ -127,6 +129,8 @@ export default function EventsScreen() {
           style={styles.eventsList}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.eventsListContent}
+          onScroll={onScroll}
+          scrollEventThrottle={16}
         >
           {filteredEvents.map((event) => (
             < EventListItem 

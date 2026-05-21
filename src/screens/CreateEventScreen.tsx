@@ -14,6 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useScroll } from '../context/ScrollContext';
 
 const PINK = '#EC4070';
 const PINK_SOFT = '#FFE3EC';
@@ -110,6 +111,7 @@ export default function CreateEvent() {
   const [photoSales, setPhotoSales] = useState(false);
   const [reelAI, setReelAI] = useState(false);
   const [branding, setBranding] = useState(false);
+  const { onScroll } = useScroll();
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -142,6 +144,8 @@ export default function CreateEvent() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          onScroll={onScroll}
+          scrollEventThrottle={16}
         >
           {/* Hero header */}
           <View style={styles.heroSection}>

@@ -13,15 +13,20 @@ import { useRouter } from "expo-router";
 
 import { Colors } from "@/src/constants/colors";
 import { userMock, settingsGroups } from "@/src/constants/mockData";
+import { useScroll } from "@/src/context/ScrollContext";
 
 export default function SettingsScreen() {
     const router = useRouter();
+    const { onScroll } = useScroll();
+
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]} testID="settings-screen">
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
       >
         {/* Header */}
         <View style={styles.headerRow}>

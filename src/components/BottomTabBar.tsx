@@ -1,15 +1,16 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   Platform,
-} from "react-native";
+  Animated,} from "react-native";
 import { useRouter, usePathname } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Colors } from "@/src/constants/colors";
+import { useScroll } from "@/src/context/ScrollContext";
 
 // Shared bottom tab bar — same look across every screen.
 // Center pink FAB is a non-routing action (Create Event placeholder).
@@ -86,17 +87,33 @@ export default function BottomTabBar({ onCreate }: { onCreate?: () => void }) {
   const router = useRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
+    const { isNavBarVisible } = useScroll();
+  
+  // Animation value for translateY
+  const translateY = useRef(new Animated.Value(0)).current;
   const isActive = (route: string) => pathname.includes(route.split("/").pop()!);
 
   const go = (route: string) =>
     router.push(route as Parameters<typeof router.push>[0]);
+    // Animate the bottom bar based on visibility
+  useEffect(() => {
+    Animated.spring(translateY, {
+      toValue: isNavBarVisible ? 0 : 100, // 100 is height of nav bar + padding
+      useNativeDriver: true,
+      friction: 10,
+      tension: 80,
+    }).start();
+  }, [isNavBarVisible, translateY]);
 
   return (
-    <View
+    <Animated.View
       style={[
         styles.wrapper,
-        { paddingBottom: Math.max(insets.bottom, 10) },
-      ]}
+  { 
+          paddingBottom: Math.max(insets.bottom, 10),
+          transform: [{ translateY }],
+        },
+            ]}
       testID="bottom-tab-bar"
     >
       <View style={styles.bar}>
@@ -131,7 +148,7 @@ export default function BottomTabBar({ onCreate }: { onCreate?: () => void }) {
       >
         <Ionicons name="add" size={32} color="#FFFFFF" />
       </TouchableOpacity>
-    </View>
+    </Animated.View>
   );
 }
 

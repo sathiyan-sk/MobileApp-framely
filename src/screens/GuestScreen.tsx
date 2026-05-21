@@ -10,6 +10,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/src/constants/colors";
 import { guestQR } from "@/src/constants/mockData";
+import { useScroll } from "@/src/context/ScrollContext";
+
 
 const GUEST_LIST = [
   { id: "g1", name: "Anita Sharma", photos: 24, joined: "just now" },
@@ -20,11 +22,14 @@ const GUEST_LIST = [
 ];
 
 export default function GuestScreen() {
+  const { onScroll } = useScroll();
   return (
     <SafeAreaView style={styles.safe} edges={["top"]} testID="guest-screen">
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
       >
         {/* Header */}
         <View style={styles.headerRow}>
