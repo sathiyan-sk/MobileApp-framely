@@ -130,7 +130,7 @@ export default function EventsScreen() {
         <ScrollView
           style={styles.eventsList}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.eventsListContent}
+          contentContainerStyle={[styles.eventsListContent, { paddingBottom: Math.max(insets.bottom + 90, 140) }]}
           onScroll={onScroll}
           scrollEventThrottle={16}
         >
@@ -145,7 +145,6 @@ export default function EventsScreen() {
               status={event.status}
               image={event.image} />
           ))}
-          <View style={{ height: Math.max(insets.bottom + 90, 100) }} />
         </ScrollView>
       </View>
     </SafeAreaView>
@@ -274,6 +273,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   eventsListContent: {
-    paddingBottom: 20,
+    paddingHorizontal: 20,
   },
 });

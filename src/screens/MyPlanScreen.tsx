@@ -1,25 +1,28 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import ScreenHeader from "@/src/components/common/ScreenHeader";
+import { Colors } from "@/src/constants/colors";
+import { myPlanData } from "@/src/constants/mockData";
+import { useScroll } from "@/src/context/ScrollContext";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { Colors } from "@/src/constants/colors";
-import { myPlanData } from "@/src/constants/mockData";
-import ScreenHeader from "@/src/components/common/ScreenHeader";
+import React from "react";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 // \"My Plan\" screen.
 // - Hero card shows the currently active plan + usage progress.
 // - Three plan tiers below: Starter (free), Pro (current), Elite (upgrade).
 // - Footer hint for switching plans.
 export default function MyPlanScreen() {
+  const { onScroll } = useScroll();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { active, plans } = myPlanData;
 
   const photosPct = (active.photosUsed / active.photosTotal) * 100;
@@ -28,8 +31,10 @@ export default function MyPlanScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]} testID="my-plan-screen">
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom + 90, 140) }]}
         showsVerticalScrollIndicator={false}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
       >
         <ScreenHeader title="" onBack={() => router.back()} />
 
@@ -217,8 +222,6 @@ export default function MyPlanScreen() {
             color={Colors.primary}
           />
         </View>
-
-        <View style={{ height: 40 }} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -226,8 +229,8 @@ export default function MyPlanScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.bgPinkSoft },
-  scroll: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 24 },
-
+  scroll: { paddingHorizontal: 20, paddingTop: 8 },
+  
   title: {
     fontSize: 34,
     fontWeight: "800",

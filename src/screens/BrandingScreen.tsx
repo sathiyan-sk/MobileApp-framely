@@ -22,11 +22,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function BrandingScreen() {
   const router = useRouter();
   const { onScroll } = useScroll();
+  const insets = useSafeAreaInsets();
 
   const [enabled, setEnabled] = useState(brandingMock.enabled);
   const [logoUri, setLogoUri] = useState<string | null>(brandingMock.logoUri);
@@ -83,7 +84,7 @@ export default function BrandingScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]} testID="branding-screen">
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom + 90, 140) }]}
         showsVerticalScrollIndicator={false}
         onScroll={onScroll}
         scrollEventThrottle={16}
@@ -357,8 +358,6 @@ export default function BrandingScreen() {
             {brandingMock.note}
           </Text>
         </View>
-
-        <View style={{ height: 40 }} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -451,8 +450,7 @@ const wmPositionStyle = (
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.bgPinkSoft },
-  scroll: { paddingHorizontal: 18, paddingTop: 4, paddingBottom: 16 },
-
+  scroll: { paddingHorizontal: 18, paddingTop: 4 },
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",

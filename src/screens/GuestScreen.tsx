@@ -27,7 +27,7 @@ export default function GuestScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]} testID="guest-screen">
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom + 90, 140) }]}
         showsVerticalScrollIndicator={false}
         onScroll={onScroll}
         scrollEventThrottle={16}
@@ -132,9 +132,7 @@ export default function GuestScreen() {
             </View>
           ))}
         </View>
-
         {/* Bottom spacing */}
-        <View style={{ height: Math.max(insets.bottom + 90, 100) }} />
       </ScrollView>
     </SafeAreaView>
   );

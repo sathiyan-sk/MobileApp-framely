@@ -1,21 +1,25 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-} from 'react-native';
+import { useScroll } from '@/src/context/ScrollContext';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useState } from 'react';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const PINK = '#EC4070';
 const PINK_SOFT = '#FFE3EC';
 const BG = '#FFFFFF';
 const TEXT = '#1A1A1A';
 const MUTED = '#8E8E93';
+
+const { onScroll } = useScroll();
+const insets = useSafeAreaInsets();
+
 
 type Design = {
   id: string;
@@ -106,7 +110,11 @@ export default function ChooseDesign() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom + 150, 160) }]} 
+        showsVerticalScrollIndicator={false}
+        onScroll={onScroll}
+        scrollEventThrottle={16}>
         {/* Hero */}
         <View style={styles.heroRow}>
           <View style={{ flex: 1, paddingRight: 12 }}>
@@ -216,8 +224,6 @@ export default function ChooseDesign() {
             <Ionicons name="chevron-forward" size={14} color={MUTED} />
           </TouchableOpacity>
         </View>
-
-        <View style={{ height: 100 }} />
       </ScrollView>
 
       {/* Action bar */}
@@ -284,7 +290,7 @@ const styles = StyleSheet.create({
   },
   draftText: { color: PINK, fontWeight: '600', fontSize: 12 },
 
-  scrollContent: { paddingHorizontal: 16, paddingBottom: 20 },
+  scrollContent: { paddingHorizontal: 16 },
   heroRow: { flexDirection: 'row', marginTop: 4, marginBottom: 16 },
   kicker: { color: PINK, fontSize: 11, fontWeight: '700', letterSpacing: 1, marginBottom: 6 },
   heroH1: { fontSize: 24, fontWeight: '700', color: TEXT, lineHeight: 30 },

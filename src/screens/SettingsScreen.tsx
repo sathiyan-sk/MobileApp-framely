@@ -25,7 +25,7 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]} testID="settings-screen">
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom + 90, 140) }]}
         showsVerticalScrollIndicator={false}
         onScroll={onScroll}
         scrollEventThrottle={16}
@@ -122,7 +122,6 @@ export default function SettingsScreen() {
         ))}
 
         {/* Extra bottom padding to prevent bottom nav from hiding content */}
-        <View style={{ height: Math.max(insets.bottom + 90, 100) }} />
         </ScrollView>
     </SafeAreaView>
   );
