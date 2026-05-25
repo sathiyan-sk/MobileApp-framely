@@ -84,7 +84,7 @@ export default function BrandingScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]} testID="branding-screen">
       <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom + 90, 140) }]}
+        contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom + 110, 150) }]}
         showsVerticalScrollIndicator={false}
         onScroll={onScroll}
         scrollEventThrottle={16}
@@ -451,6 +451,7 @@ const wmPositionStyle = (
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.bgPinkSoft },
   scroll: { paddingHorizontal: 18, paddingTop: 4 },
+  
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",

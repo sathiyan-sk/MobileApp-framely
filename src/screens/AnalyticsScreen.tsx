@@ -50,7 +50,7 @@ export default function AnalyticsScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]} testID="analytics-screen">
       <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom + 90, 120) }]}
+        contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom + 110, 150) }]}
         showsVerticalScrollIndicator={false}
         onScroll={onScroll}
         scrollEventThrottle={16}

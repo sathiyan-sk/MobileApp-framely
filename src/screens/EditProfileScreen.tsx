@@ -43,7 +43,7 @@ export default function EditProfileScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]} testID="edit-profile-screen">
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom + 110, 150) }]}
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
@@ -240,9 +240,6 @@ export default function EditProfileScreen() {
             </View>
           </View>
         </View>
-
-        {/* Bottom spacing for button */}
-        <View style={{ height: Math.max(insets.bottom + 90, 100) }} />
       </ScrollView>
 
       {/* Fixed Save Button */}

@@ -1,19 +1,19 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  Image,
-  Switch,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useState } from 'react';
+import {
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useScroll } from '../context/ScrollContext';
 
 const PINK = '#EC4070';
@@ -112,6 +112,7 @@ export default function CreateEvent() {
   const [reelAI, setReelAI] = useState(false);
   const [branding, setBranding] = useState(false);
   const { onScroll } = useScroll();
+  const insets = useSafeAreaInsets();
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -141,7 +142,7 @@ export default function CreateEvent() {
         </View>
 
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom + 150, 160) }]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           onScroll={onScroll}
@@ -291,8 +292,6 @@ export default function CreateEvent() {
               />
             </View>
           </View>
-
-          <View style={{ height: 100 }} />
         </ScrollView>
 
         {/* Bottom action bar */}
@@ -358,8 +357,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   draftText: { color: PINK, fontWeight: '600', fontSize: 12 },
-
-  scrollContent: { paddingHorizontal: 16, paddingBottom: 20 },
+  scrollContent: { paddingHorizontal: 16 },
 
   heroSection: { flexDirection: 'row', marginTop: 4, marginBottom: 16 },
   kicker: { color: PINK, fontSize: 11, fontWeight: '700', letterSpacing: 1, marginBottom: 6 },

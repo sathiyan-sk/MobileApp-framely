@@ -281,8 +281,7 @@ export default function HomeScreen() {
             </View>
           </View>
         </View>
-
-        <View style={{ height: Math.max(insets.bottom + 90, 100) }} />
+        <View style={{ height: Math.max(insets.bottom + 110, 140) }} />
       </ScrollView>
     </SafeAreaView>
   );

@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     paddingHorizontal: 12,
-    backgroundColor: "transparent",
+    backgroundColor: Colors.bgPink,
   },
   bar: {
     flexDirection: "row",

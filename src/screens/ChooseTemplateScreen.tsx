@@ -17,10 +17,6 @@ const BG = '#FFFFFF';
 const TEXT = '#1A1A1A';
 const MUTED = '#8E8E93';
 
-const { onScroll } = useScroll();
-const insets = useSafeAreaInsets();
-
-
 type Design = {
   id: string;
   badge: string;
@@ -84,6 +80,8 @@ function DesignCard({ item, selected, onSelect }: { item: Design; selected: bool
 export default function ChooseDesign() {
   const [selectedId, setSelectedId] = useState('1');
   const [category, setCategory] = useState<'Wedding' | 'Events' | 'Sports'>('Wedding');
+  const insets = useSafeAreaInsets();
+  const { onScroll } = useScroll();
 
   const selectedItem = designs.find((d) => d.id === selectedId);
 
