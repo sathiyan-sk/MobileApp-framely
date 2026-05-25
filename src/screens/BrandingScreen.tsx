@@ -1,35 +1,36 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Image,
-  Switch,
-  Alert,
-  Platform,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import * as ImagePicker from "expo-image-picker";
 import { Colors } from "@/src/constants/colors";
 import {
   brandingMock,
-  watermarkPositions,
-  watermarkSizes,
   WatermarkPosition,
+  watermarkPositions,
   WatermarkSize,
+  watermarkSizes,
 } from "@/src/constants/mockData";
+import { useScroll } from "@/src/context/ScrollContext";
+import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import {
+  Alert,
+  Image,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function BrandingScreen() {
   const router = useRouter();
+  const { onScroll } = useScroll();
+
   const [enabled, setEnabled] = useState(brandingMock.enabled);
   const [logoUri, setLogoUri] = useState<string | null>(brandingMock.logoUri);
-  const [position, setPosition] = useState<WatermarkPosition>(
-    brandingMock.position,
-  );
+  const [position, setPosition] = useState<WatermarkPosition>(brandingMock.position,);
   const [size, setSize] = useState<WatermarkSize>(brandingMock.size);
   const [opacity, setOpacity] = useState<number>(brandingMock.opacity);
   const [marginH, setMarginH] = useState<number>(brandingMock.marginH);
@@ -84,6 +85,8 @@ export default function BrandingScreen() {
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
       >
         {/* Header */}
         <View style={styles.headerRow}>

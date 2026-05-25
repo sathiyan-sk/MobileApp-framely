@@ -1,16 +1,17 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import { Colors } from "@/src/constants/colors";
 import { analyticsData, userMock } from "@/src/constants/mockData";
+import { useScroll } from "@/src/context/ScrollContext";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type Tab = "overview" | "registrations";
 
@@ -19,12 +20,16 @@ type Tab = "overview" | "registrations";
 export default function AnalyticsScreen() {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("overview");
+  const { onScroll } = useScroll();
+
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]} testID="analytics-screen">
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
       >
         {/* Header */}
         <View style={styles.headerRow}>
@@ -185,7 +190,7 @@ export default function AnalyticsScreen() {
           </View>
         )}
 
-        <View style={{ height: 40 }} />
+        <View style={{ height: 140 }} />
       </ScrollView>
     </SafeAreaView>
   );
