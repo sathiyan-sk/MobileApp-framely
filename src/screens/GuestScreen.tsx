@@ -1,6 +1,7 @@
 import { Colors } from "@/src/constants/colors";
 import { guestQR } from "@/src/constants/mockData";
 import { useScroll } from "@/src/context/ScrollContext";
+import { useContentInsets } from "@/src/hooks/useContentInsets";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -10,8 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const GUEST_LIST = [
   { id: "g1", name: "Anita Sharma", photos: 24, joined: "just now" },
@@ -23,11 +23,11 @@ const GUEST_LIST = [
 
 export default function GuestScreen() {
   const { onScroll } = useScroll();
-  const insets = useSafeAreaInsets();
+  const { contentBottomPadding } = useContentInsets();
   return (
     <SafeAreaView style={styles.safe} edges={["top"]} testID="guest-screen">
       <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom + 90, 140) }]}
+        contentContainerStyle={[styles.scroll, { paddingBottom: contentBottomPadding }]}
         showsVerticalScrollIndicator={false}
         onScroll={onScroll}
         scrollEventThrottle={16}

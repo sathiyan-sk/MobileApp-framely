@@ -9,8 +9,11 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
+import EventCard from "@/src/components/home/EventCard";
+import FeaturedEventsCarousel from "@/src/components/home/FeaturedEventsCarousel";
+import SectionHeader from "@/src/components/home/SectionHeader";
+import StatCard from "@/src/components/home/StatCard";
 import { Colors } from "@/src/constants/colors";
 import {
   activityFeed,
@@ -22,14 +25,9 @@ import {
   storagePlan,
   userMock,
 } from "@/src/constants/mockData";
-
-import EventCard from "@/src/components/home/EventCard";
-import FeaturedEventsCarousel from "@/src/components/home/FeaturedEventsCarousel";
-import SectionHeader from "@/src/components/home/SectionHeader";
-import StatCard from "@/src/components/home/StatCard";
 import { useScroll } from "@/src/context/ScrollContext";
-
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useContentInsets } from '../hooks/useContentInsets';
 
 // Horizontal screen padding used by the ScrollView — keep in sync with styles.scroll.
 const SCREEN_PAD = 18;
@@ -38,14 +36,14 @@ const SCREEN_PAD = 18;
 export default function HomeScreen() {
   const { width: screenWidth } = useWindowDimensions();
   const carouselItemWidth = screenWidth - SCREEN_PAD * 2;
-    const { onScroll } = useScroll();
-  const insets = useSafeAreaInsets();
+  const { onScroll } = useScroll();
+  const { contentBottomPadding } = useContentInsets();
 
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]} testID="home-screen">
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[styles.scroll, { paddingBottom: contentBottomPadding }]}
         showsVerticalScrollIndicator={false}
         onScroll={onScroll}
         scrollEventThrottle={16}
@@ -281,7 +279,6 @@ export default function HomeScreen() {
             </View>
           </View>
         </View>
-        <View style={{ height: Math.max(insets.bottom + 110, 140) }} />
       </ScrollView>
     </SafeAreaView>
   );

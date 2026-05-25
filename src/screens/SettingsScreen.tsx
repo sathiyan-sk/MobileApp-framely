@@ -14,18 +14,18 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors } from "@/src/constants/colors";
 import { settingsGroups, userMock } from "@/src/constants/mockData";
 import { useScroll } from "@/src/context/ScrollContext";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useContentInsets } from "@/src/hooks/useContentInsets";
 
 export default function SettingsScreen() {
     const router = useRouter();
     const { onScroll } = useScroll();
-    const insets = useSafeAreaInsets();
+    const { contentBottomPadding } = useContentInsets();
 
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]} testID="settings-screen">
       <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom + 90, 140) }]}
+        contentContainerStyle={[styles.scroll, { paddingBottom: contentBottomPadding }]}
         showsVerticalScrollIndicator={false}
         onScroll={onScroll}
         scrollEventThrottle={16}

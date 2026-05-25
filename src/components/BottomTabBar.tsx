@@ -1,4 +1,5 @@
 import { Colors } from "@/src/constants/colors";
+import { BOTTOM_NAV } from "@/src/constants/layout";
 import { useScroll } from "@/src/context/ScrollContext";
 import { Ionicons } from "@expo/vector-icons";
 import { usePathname, useRouter } from "expo-router";
@@ -97,13 +98,13 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    paddingHorizontal: 12,
+    paddingHorizontal: BOTTOM_NAV.HORIZONTAL_PADDING,
     backgroundColor: Colors.bgPink,
   },
   bar: {
     flexDirection: "row",
     backgroundColor: "#FFFFFF",
-    borderRadius: 28,
+    borderRadius: BOTTOM_NAV.BORDER_RADIUS,
     paddingVertical: 10,
     paddingHorizontal: 8,
     alignItems: "center",

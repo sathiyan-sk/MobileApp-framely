@@ -1,6 +1,7 @@
 import { Colors } from "@/src/constants/colors";
 import { analyticsData } from "@/src/constants/mockData";
 import { useScroll } from "@/src/context/ScrollContext";
+import { useContentInsets } from "@/src/hooks/useContentInsets";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -11,7 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type Tab = "overview" | "registrations";
 
@@ -45,12 +46,12 @@ export default function AnalyticsScreen() {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("overview");
   const { onScroll } = useScroll();
-  const insets = useSafeAreaInsets();
+  const { contentBottomPadding } = useContentInsets();
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]} testID="analytics-screen">
       <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom + 110, 150) }]}
+        contentContainerStyle={[styles.scroll, { paddingBottom: contentBottomPadding }]}
         showsVerticalScrollIndicator={false}
         onScroll={onScroll}
         scrollEventThrottle={16}

@@ -10,11 +10,11 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EventListItem } from '../components/EventListItem';
 import { Colors } from '../constants/colors';
 import { myEvents } from '../constants/mockData';
 import { useScroll } from '../context/ScrollContext';
+import { useContentInsets } from '../hooks/useContentInsets';
 
 
 type FilterType = 'all' | 'live' | 'scheduled' | 'drafts';
@@ -23,7 +23,7 @@ export default function EventsScreen() {
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const { onScroll } = useScroll();
-  const insets = useSafeAreaInsets();
+  const { contentBottomPadding } = useContentInsets();
 
   const filters = [
     { key: 'all', label: 'All', count: myEvents.length },
@@ -130,7 +130,7 @@ export default function EventsScreen() {
         <ScrollView
           style={styles.eventsList}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={[styles.eventsListContent, { paddingBottom: Math.max(insets.bottom + 90, 140) }]}
+          contentContainerStyle={[styles.eventsListContent, { paddingBottom: contentBottomPadding }]}
           onScroll={onScroll}
           scrollEventThrottle={16}
         >

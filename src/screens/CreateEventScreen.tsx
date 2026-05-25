@@ -13,8 +13,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { SCREEN_OVERRIDES } from '../constants/layout';
 import { useScroll } from '../context/ScrollContext';
+import { useContentInsets } from '../hooks/useContentInsets';
 
 const PINK = '#EC4070';
 const PINK_SOFT = '#FFE3EC';
@@ -112,8 +114,7 @@ export default function CreateEvent() {
   const [reelAI, setReelAI] = useState(false);
   const [branding, setBranding] = useState(false);
   const { onScroll } = useScroll();
-  const insets = useSafeAreaInsets();
-
+  const { contentBottomPadding } = useContentInsets({extraBottomSpacing: SCREEN_OVERRIDES.CREATE_EVENT.EXTRA_BOTTOM_SPACING,});
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <KeyboardAvoidingView
@@ -142,7 +143,7 @@ export default function CreateEvent() {
         </View>
 
         <ScrollView
-          contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom + 150, 160) }]}
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: contentBottomPadding }]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           onScroll={onScroll}
