@@ -1,19 +1,18 @@
-import React, { useEffect, useRef } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Platform,
-  Animated,} from "react-native";
-import { useRouter, usePathname } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Colors } from "@/src/constants/colors";
 import { useScroll } from "@/src/context/ScrollContext";
+import { Ionicons } from "@expo/vector-icons";
+import { usePathname, useRouter } from "expo-router";
+import React, { useEffect, useRef } from "react";
+import {
+  Animated,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-// Shared bottom tab bar — same look across every screen.
-// Center pink FAB is a non-routing action (Create Event placeholder).
 type TabItem = {
   key: string;
   label: string;
@@ -24,62 +23,19 @@ type TabItem = {
 
 const TABS: { left: TabItem[]; right: TabItem[] } = {
   left: [
-    {
-      key: "home",
-      label: "Home",
-      icon: "home-outline",
-      iconActive: "home",
-      route: "/(tabs)/home",
-    },
-    {
-      key: "events",
-      label: "Events",
-      icon: "calendar-outline",
-      iconActive: "calendar",
-      route: "/(tabs)/events",
-    },
+    { key: "home", label: "Home", icon: "home-outline", iconActive: "home", route: "/(tabs)/home" },
+    { key: "events", label: "Events", icon: "calendar-outline", iconActive: "calendar", route: "/(tabs)/events" },
   ],
   right: [
-    {
-      key: "guest",
-      label: "Guest",
-      icon: "person-outline",
-      iconActive: "person",
-      route: "/(tabs)/guest",
-    },
-    {
-      key: "settings",
-      label: "Settings",
-      icon: "settings-outline",
-      iconActive: "settings",
-      route: "/(tabs)/settings",
-    },
+    { key: "guest", label: "Guest", icon: "person-outline", iconActive: "person", route: "/(tabs)/guest" },
+    { key: "settings", label: "Settings", icon: "settings-outline", iconActive: "settings", route: "/(tabs)/settings" },
   ],
 };
 
-const TabButton = ({
-  item,
-  active,
-  onPress,
-}: {
-  item: TabItem;
-  active: boolean;
-  onPress: () => void;
-}) => (
-  <TouchableOpacity
-    style={styles.tabBtn}
-    onPress={onPress}
-    activeOpacity={0.7}
-    testID={`tab-${item.key}`}
-  >
-    <Ionicons
-      name={active ? item.iconActive : item.icon}
-      size={22}
-      color={active ? Colors.primary : "#9AA0A6"}
-    />
-    <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>
-      {item.label}
-    </Text>
+const TabButton = ({ item, active, onPress }: { item: TabItem; active: boolean; onPress: () => void }) => (
+  <TouchableOpacity style={styles.tabBtn} onPress={onPress} activeOpacity={0.7} testID={`tab-${item.key}`}>
+    <Ionicons name={active ? item.iconActive : item.icon} size={22} color={active ? Colors.primary : "#9AA0A6"} />
+    <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{item.label}</Text>
   </TouchableOpacity>
 );
 
@@ -87,18 +43,14 @@ export default function BottomTabBar({ onCreate }: { onCreate?: () => void }) {
   const router = useRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
-    const { isNavBarVisible } = useScroll();
-  
-  // Animation value for translateY
+  const { isNavBarVisible } = useScroll();
   const translateY = useRef(new Animated.Value(0)).current;
   const isActive = (route: string) => pathname.includes(route.split("/").pop()!);
+  const go = (route: string) => router.push(route as Parameters<typeof router.push>[0]);
 
-  const go = (route: string) =>
-    router.push(route as Parameters<typeof router.push>[0]);
-    // Animate the bottom bar based on visibility
   useEffect(() => {
     Animated.spring(translateY, {
-      toValue: isNavBarVisible ? 0 : 100, // 100 is height of nav bar + padding
+      toValue: isNavBarVisible ? 0 : 120,
       useNativeDriver: true,
       friction: 10,
       tension: 80,
@@ -109,45 +61,32 @@ export default function BottomTabBar({ onCreate }: { onCreate?: () => void }) {
     <Animated.View
       style={[
         styles.wrapper,
-  { 
+        {
           paddingBottom: Math.max(insets.bottom, 10),
           transform: [{ translateY }],
         },
-            ]}
+      ]}
       testID="bottom-tab-bar"
     >
       <View style={styles.bar}>
         {TABS.left.map((t) => (
-          <TabButton
-            key={t.key}
-            item={t}
-            active={isActive(t.route)}
-            onPress={() => go(t.route)}
-          />
+          <TabButton key={t.key} item={t} active={isActive(t.route)} onPress={() => go(t.route)} />
         ))}
 
-        {/* Spacer for the FAB */}
-        <View style={styles.fabSpacer} />
+        {/* Center FAB — now inline inside the bar, perfectly centered */}
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={onCreate}
+          activeOpacity={0.85}
+          testID="tab-create-fab"
+        >
+          <Ionicons name="add" size={28} color="#FFFFFF" />
+        </TouchableOpacity>
 
         {TABS.right.map((t) => (
-          <TabButton
-            key={t.key}
-            item={t}
-            active={isActive(t.route)}
-            onPress={() => go(t.route)}
-          />
+          <TabButton key={t.key} item={t} active={isActive(t.route)} onPress={() => go(t.route)} />
         ))}
       </View>
-
-      {/* Center floating action button */}
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={onCreate}
-        activeOpacity={0.85}
-        testID="tab-create-fab"
-      >
-        <Ionicons name="add" size={32} color="#FFFFFF" />
-      </TouchableOpacity>
     </Animated.View>
   );
 }
@@ -191,16 +130,11 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontWeight: "700",
   },
-  fabSpacer: {
-    width: 70,
-  },
+  // FAB is now inline — same width as a spacer, centered within the bar row
   fab: {
-    position: "absolute",
-    alignSelf: "center",
-    top: -22,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",
@@ -209,7 +143,7 @@ const styles = StyleSheet.create({
         shadowColor: Colors.primary,
         shadowOpacity: 0.45,
         shadowRadius: 12,
-        shadowOffset: { width: 0, height: 6 },
+        shadowOffset: { width: 0, height: 4 },
       },
       android: { elevation: 10 },
     }),

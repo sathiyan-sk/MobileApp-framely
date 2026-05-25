@@ -1,18 +1,18 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  Platform,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import { Colors } from "@/src/constants/colors";
 import { userMock } from "@/src/constants/mockData";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+
 
 const INDUSTRIES = [
   "Photography",
@@ -33,6 +33,7 @@ export default function EditProfileScreen() {
   const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
   const [showIndustryDropdown, setShowIndustryDropdown] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<string | null>(null);
+  const insets = useSafeAreaInsets();
 
   const handleSave = () => {
     // Save logic here
@@ -241,7 +242,7 @@ export default function EditProfileScreen() {
         </View>
 
         {/* Bottom spacing for button */}
-        <View style={{ height: 140 }} />
+        <View style={{ height: Math.max(insets.bottom + 90, 100) }} />
       </ScrollView>
 
       {/* Fixed Save Button */}

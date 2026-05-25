@@ -1,18 +1,19 @@
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
   SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
-import { Colors } from '../constants/colors';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EventListItem } from '../components/EventListItem';
+import { Colors } from '../constants/colors';
 import { myEvents } from '../constants/mockData';
-import { router } from 'expo-router';
 import { useScroll } from '../context/ScrollContext';
 
 
@@ -21,7 +22,8 @@ type FilterType = 'all' | 'live' | 'scheduled' | 'drafts';
 export default function EventsScreen() {
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
-    const { onScroll } = useScroll();
+  const { onScroll } = useScroll();
+  const insets = useSafeAreaInsets();
 
   const filters = [
     { key: 'all', label: 'All', count: myEvents.length },
@@ -143,7 +145,7 @@ export default function EventsScreen() {
               status={event.status}
               image={event.image} />
           ))}
-          <View style={{ height: 100 }} />
+          <View style={{ height: Math.max(insets.bottom + 90, 100) }} />
         </ScrollView>
       </View>
     </SafeAreaView>

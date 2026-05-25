@@ -1,23 +1,25 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import React from "react";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 
 import { Colors } from "@/src/constants/colors";
-import { userMock, settingsGroups } from "@/src/constants/mockData";
+import { settingsGroups, userMock } from "@/src/constants/mockData";
 import { useScroll } from "@/src/context/ScrollContext";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function SettingsScreen() {
     const router = useRouter();
     const { onScroll } = useScroll();
+    const insets = useSafeAreaInsets();
 
 
   return (
@@ -120,7 +122,7 @@ export default function SettingsScreen() {
         ))}
 
         {/* Extra bottom padding to prevent bottom nav from hiding content */}
-        <View style={{ height: 140 }} />      
+        <View style={{ height: Math.max(insets.bottom + 90, 100) }} />
         </ScrollView>
     </SafeAreaView>
   );

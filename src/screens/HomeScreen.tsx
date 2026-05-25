@@ -1,34 +1,35 @@
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
   Image,
+  ScrollView,
+  StyleSheet,
+  Text,
   TouchableOpacity,
   useWindowDimensions,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
 
 import { Colors } from "@/src/constants/colors";
 import {
-  userMock,
-  statsMock,
+  activityFeed,
   featuredEvents,
+  guestQR,
   myEvents,
   recentUploads,
-  activityFeed,
-  guestQR,
+  statsMock,
   storagePlan,
+  userMock,
 } from "@/src/constants/mockData";
 
-import StatCard from "@/src/components/home/StatCard";
-import FeaturedEventsCarousel from "@/src/components/home/FeaturedEventsCarousel";
 import EventCard from "@/src/components/home/EventCard";
+import FeaturedEventsCarousel from "@/src/components/home/FeaturedEventsCarousel";
 import SectionHeader from "@/src/components/home/SectionHeader";
+import StatCard from "@/src/components/home/StatCard";
 import { useScroll } from "@/src/context/ScrollContext";
 
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // Horizontal screen padding used by the ScrollView — keep in sync with styles.scroll.
 const SCREEN_PAD = 18;
@@ -38,6 +39,7 @@ export default function HomeScreen() {
   const { width: screenWidth } = useWindowDimensions();
   const carouselItemWidth = screenWidth - SCREEN_PAD * 2;
     const { onScroll } = useScroll();
+  const insets = useSafeAreaInsets();
 
 
   return (
@@ -280,7 +282,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <View style={{ height: 100 }} />
+        <View style={{ height: Math.max(insets.bottom + 90, 100) }} />
       </ScrollView>
     </SafeAreaView>
   );

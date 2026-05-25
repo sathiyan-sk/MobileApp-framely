@@ -1,16 +1,16 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/src/constants/colors";
 import { guestQR } from "@/src/constants/mockData";
 import { useScroll } from "@/src/context/ScrollContext";
+import { Ionicons } from "@expo/vector-icons";
+import React from "react";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 
 const GUEST_LIST = [
@@ -23,6 +23,7 @@ const GUEST_LIST = [
 
 export default function GuestScreen() {
   const { onScroll } = useScroll();
+  const insets = useSafeAreaInsets();
   return (
     <SafeAreaView style={styles.safe} edges={["top"]} testID="guest-screen">
       <ScrollView
@@ -133,7 +134,7 @@ export default function GuestScreen() {
         </View>
 
         {/* Bottom spacing */}
-        <View style={{ height: 140 }} />
+        <View style={{ height: Math.max(insets.bottom + 90, 100) }} />
       </ScrollView>
     </SafeAreaView>
   );
