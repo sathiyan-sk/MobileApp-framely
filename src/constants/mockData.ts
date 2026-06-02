@@ -184,6 +184,74 @@ export const myEvents = [
       "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&q=80",
   },
 ];
+// ──────────────────────────────────────────────────────────────────────────────
+// EVENTS WORKSPACE MOCK DATA
+// ──────────────────────────────────────────────────────────────────────────────
+export type EventPublishStatus = 'published' | 'unpublished';
+export type EventActivityStatus = 'active' | 'upcoming' | 'expired';
+
+export interface EventWorkspaceItem {
+  id: string;
+  title: string;
+  date: string;
+  sortTimestamp: number;
+  publishStatus: EventPublishStatus;
+  eventStatus: EventActivityStatus;
+  guests: number;
+  photos: number;
+  image: string;
+}
+
+export const eventsWorkspaceData: EventWorkspaceItem[] = [
+  {
+    id: 'ew1',
+    title: 'Sarah & James Wedding',
+    date: 'Apr 25, 2026',
+    sortTimestamp: new Date('2026-04-25').getTime(),
+    publishStatus: 'published',
+    eventStatus: 'active',
+    guests: 320,
+    photos: 152,
+    image:
+      'https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80',
+  },
+  {
+    id: 'ew2',
+    title: "Meera's Baby Shower",
+    date: 'Mar 10, 2026',
+    sortTimestamp: new Date('2026-03-10').getTime(),
+    publishStatus: 'unpublished',
+    eventStatus: 'upcoming',
+    guests: 120,
+    photos: 98,
+    image:
+      'https://images.unsplash.com/photo-1530023367847-a683933f4172?w=600&q=80',
+  },
+  {
+    id: 'ew3',
+    title: 'Arun & Priya Engagement',
+    date: 'Feb 18, 2026',
+    sortTimestamp: new Date('2026-02-18').getTime(),
+    publishStatus: 'published',
+    eventStatus: 'active',
+    guests: 200,
+    photos: 210,
+    image:
+      'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=600&q=80',
+  },
+  {
+    id: 'ew4',
+    title: 'Arun & Priya Engagement',
+    date: 'Feb 18, 2026',
+    sortTimestamp: new Date('2026-02-18').getTime(),
+    publishStatus: 'published',
+    eventStatus: 'expired',
+    guests: 200,
+    photos: 210,
+    image:
+      'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=600&q=80',
+  },
+];
 
 export const recentUploads = [
   {

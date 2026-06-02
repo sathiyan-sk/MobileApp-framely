@@ -16,6 +16,18 @@ export const Colors = {
   expired: '#F44336',
   draft: '#9C27B0',
   
+  // Event workspace status colors
+  activeStatus: '#10B981',
+  activeStatusBg: '#ECFDF5',
+  upcomingStatus: '#F97316',
+  upcomingStatusBg: '#FFF7ED',
+  expiredStatus: '#EF4444',
+  expiredStatusBg: '#FEF2F2',
+
+  // Publish badge colors
+  publishedBadge: 'rgba(22, 101, 52, 0.80)',
+  unpublishedBadge: 'rgba(75, 85, 99, 0.80)',
+  
   // Stat card colors
   statPink: '#FFE8F0',
   statPurple: '#F0E8FF',

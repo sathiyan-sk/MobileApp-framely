@@ -43,52 +43,60 @@ Clone the repository and install dependencies:
 
 ```bash
 git clone <your-repo-url>
-cd framelyMobile
-npm install
+cd project name
+check node -v
+check npx expo -v
 
 
 🔑 Environment Setup
-
 Create a .env file in root:
 EXPO_PUBLIC_BACKEND_URL=http://192.168.X.X:3000Show
+-------------------------------
+▶️ Run the App( first time run or setuped project -- go below instructions )
 
-▶️ Run the App
+ Start the development server :
+    - npx expo start
 
-Start the development server :
-- npx expo start
-
+🧹 Reset Cache (if errors occur)
+- npx expo install expo@~54.0.35 expo-font@~14.0.12 expo-router@~6.0.24
+    - npx expo start --clear
+--------------------------------
 📱 Run on Device...
 📲 Open Expo Go app
 📷 Scan the QR code shown in terminal
 
+-----------------------------------------
+(-- This is for first time setup--)
 
-🧹 Reset Cache (if errors occur)
-- npx expo start --clear
+📦 Installation---
+- npm install
+- npx expo install
 
-
-📦 Install New Packages
-Always use:
-Shell npx expo install <package-name>Show more lines
-Example:
+📦->Required packages:
 - npx expo install expo-image-picker
 - npx expo install expo-linear-gradient
 - npx expo install @expo/vector-icons
 - npx expo install react-native-screens react-native-safe-area-context
 - npx expo install react-native-gesture-handler
 
+✔ (now start the projct)...
+- npx expo start
+
+-------------------------------------------
+
+
 🧭 Navigation
 Routing is handled via Expo Router
 Example:
 TypeScriptimport { router } from 'expo-router';router.push('/create');
 
-📌 Development Guidelines
-
+📌 Development Guidelines-->
 Keep UI in src/screens
 Keep app/ files minimal (routing only)
 Use reusable components inside src/components
 Do not modify package.json manually
 Add dependencies only when required
-
+Always use: npx expo install <package-name>
 
 ⚠️ Common Issues & Fixes
 

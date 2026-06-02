@@ -1,76 +1,172 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Modal,
+  Pressable,
+} from 'react-native';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
+import type { EventPublishStatus, EventActivityStatus } from '../constants/mockData';
 
 interface EventListItemProps {
   title: string;
-  location: string;
   date: string;
   photos: number;
   guests: number;
-  status: 'live' | 'scheduled' | 'completed' | 'expired' | 'draft';
+  publishStatus: EventPublishStatus;
+  eventStatus: EventActivityStatus;
   image: string;
   onPress?: () => void;
+  onMenuAction?: (action: string, eventId: string) => void;
+  eventId: string;
 }
 
-const statusConfig = {
-  live: { color: Colors.live, text: 'Live' },
-  scheduled: { color: Colors.scheduled, text: 'Scheduled' },
-  completed: { color: Colors.completed, text: 'Completed' },
-  expired: { color: Colors.expired, text: 'Expired' },
-  draft: { color: Colors.draft, text: 'Draft' },
+const eventStatusConfig = {
+  active: { color: Colors.activeStatus, bg: Colors.activeStatusBg, text: 'Active' },
+  upcoming: { color: Colors.upcomingStatus, bg: Colors.upcomingStatusBg, text: 'Upcoming' },
+  expired: { color: Colors.expiredStatus, bg: Colors.expiredStatusBg, text: 'Expired' },
 };
+
+const publishBadgeConfig = {
+  published: { bg: Colors.publishedBadge, text: 'Published' },
+  unpublished: { bg: Colors.unpublishedBadge, text: 'Unpublished' },
+};
+
+const MENU_ACTIONS = [
+  { key: 'unpublish', label: 'Unpublish event', icon: 'eye-off-outline' as const },
+  { key: 'edit', label: 'Edit event', icon: 'create-outline' as const },
+  { key: 'share', label: 'Share event', icon: 'share-social-outline' as const },
+  { key: 'upload', label: 'Upload photos', icon: 'cloud-upload-outline' as const },
+  { key: 'delete', label: 'Delete event', icon: 'trash-outline' as const },
+];
 
 export const EventListItem: React.FC<EventListItemProps> = ({
   title,
-  location,
   date,
   photos,
   guests,
-  status,
+  publishStatus,
+  eventStatus,
   image,
   onPress,
+  onMenuAction,
+  eventId,
 }) => {
-  const statusInfo = statusConfig[status];
+  const [menuVisible, setMenuVisible] = useState(false);
+  const statusInfo = eventStatusConfig[eventStatus];
+  const publishInfo = publishBadgeConfig[publishStatus];
+
+  const handleMenuAction = (action: string) => {
+    setMenuVisible(false);
+    onMenuAction?.(action, eventId);
+  };
 
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
-      <Image source={{ uri: image }} style={styles.image} />
+    <TouchableOpacity
+      style={styles.container}
+      onPress={onPress}
+      activeOpacity={0.7}
+      data-testid={`event-card-${eventId}`}
+    >
+      {/* Event Image with Publish Badge */}
+      <View style={styles.imageWrapper}>
+        <Image source={{ uri: image }} style={styles.image} />
+        <View style={[styles.publishBadge, { backgroundColor: publishInfo.bg }]}>
+          <Text style={styles.publishBadgeText}>{publishInfo.text}</Text>
+        </View>
+      </View>
+
+      {/* Event Content */}
       <View style={styles.content}>
-        <View style={styles.header}>
-          <Text style={styles.title} numberOfLines={1}>{title}</Text>
-          <TouchableOpacity>
-            <MaterialCommunityIcons name="dots-vertical" size={20} color={Colors.grayDark} />
+        {/* Date + Dots Menu Row */}
+        <View style={styles.topRow}>
+          <Text style={styles.date}>{date}</Text>
+          <TouchableOpacity
+            onPress={() => setMenuVisible(true)}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            data-testid={`event-menu-${eventId}`}
+          >
+            <MaterialCommunityIcons
+              name="dots-vertical"
+              size={20}
+              color={Colors.grayDark}
+            />
           </TouchableOpacity>
         </View>
-        <View style={styles.locationRow}>
-          <MaterialCommunityIcons name="map-marker" size={14} color={Colors.gray} />
-          <Text style={styles.location} numberOfLines={1}>{location}</Text>
-        </View>
-        <View style={styles.dateRow}>
-          <MaterialCommunityIcons name="calendar" size={14} color={Colors.gray} />
-          <Text style={styles.date}>{date}</Text>
-        </View>
-        <View style={styles.footer}>
-          <View style={styles.stats}>
-            <View style={styles.statItem}>
-              <MaterialCommunityIcons name="image-multiple" size={16} color={Colors.gray} />
-              <Text style={styles.statText}>{photos}</Text>
-              <Text style={styles.statLabel}>PHOTOS</Text>
-            </View>
-            <View style={styles.statItem}>
-              <MaterialCommunityIcons name="account-group" size={16} color={Colors.gray} />
-              <Text style={styles.statText}>{guests}</Text>
-              <Text style={styles.statLabel}>GUESTS</Text>
-            </View>
+
+        {/* Title + Status */}
+        <View style={styles.titleStatusRow}>
+          <Text style={styles.title} numberOfLines={2}>
+            {title}
+          </Text>
+          <View style={[styles.statusBadge, { backgroundColor: statusInfo.bg }]}>
+            <View
+              style={[styles.statusDot, { backgroundColor: statusInfo.color }]}
+            />
+            <Text style={[styles.statusText, { color: statusInfo.color }]}>
+              {statusInfo.text}
+            </Text>
           </View>
-          <View style={[styles.statusBadge, { backgroundColor: statusInfo.color + '20' }]}>
-            <View style={[styles.statusDot, { backgroundColor: statusInfo.color }]} />
-            <Text style={[styles.statusText, { color: statusInfo.color }]}>{statusInfo.text}</Text>
+        </View>
+
+        {/* Stats Row */}
+        <View style={styles.statsRow}>
+          <View style={styles.statItem}>
+            <Ionicons name="people-outline" size={15} color={Colors.gray} />
+            <Text style={styles.statText}>{guests} Guests</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Ionicons name="images-outline" size={15} color={Colors.gray} />
+            <Text style={styles.statText}>{photos} Photos</Text>
           </View>
         </View>
       </View>
+
+      {/* Three-dot Menu Modal */}
+      <Modal
+        visible={menuVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setMenuVisible(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setMenuVisible(false)}
+        >
+          <View style={styles.menuContainer}>
+            <Text style={styles.menuTitle}>{title}</Text>
+            <View style={styles.menuDivider} />
+            {MENU_ACTIONS.map((action) => (
+              <TouchableOpacity
+                key={action.key}
+                style={styles.menuItem}
+                onPress={() => handleMenuAction(action.key)}
+                data-testid={`menu-action-${action.key}`}
+              >
+                <Ionicons
+                  name={action.icon}
+                  size={20}
+                  color={
+                    action.key === 'delete' ? Colors.red : Colors.textBody
+                  }
+                />
+                <Text
+                  style={[
+                    styles.menuItemText,
+                    action.key === 'delete' && { color: Colors.red },
+                  ]}
+                >
+                  {action.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </Pressable>
+      </Modal>
     </TouchableOpacity>
   );
 };
@@ -80,88 +176,76 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: Colors.white,
     borderRadius: 16,
-    marginHorizontal: 16,
-    marginBottom: 12,
+    marginBottom: 14,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
     elevation: 2,
   },
+  imageWrapper: {
+    width: 155,
+    height: 145,
+    position: 'relative',
+  },
   image: {
-    width: 120,
-    height: 140,
+    width: '100%',
+    height: '100%',
+    borderTopLeftRadius: 16,
+    borderBottomLeftRadius: 16,
+  },
+  publishBadge: {
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  publishBadgeText: {
+    color: Colors.white,
+    fontSize: 10.5,
+    fontWeight: '600',
   },
   content: {
     flex: 1,
-    padding: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     justifyContent: 'space-between',
   },
-  header: {
+  topRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.black,
-    flex: 1,
-    marginRight: 8,
-  },
-  locationRow: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    marginTop: 4,
-  },
-  location: {
-    fontSize: 13,
-    color: Colors.gray,
-    flex: 1,
-  },
-  dateRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 2,
   },
   date: {
-    fontSize: 13,
-    color: Colors.gray,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    marginTop: 8,
-  },
-  stats: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  statItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  statText: {
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: '600',
-    color: Colors.black,
+    color: Colors.primary,
   },
-  statLabel: {
-    fontSize: 10,
-    color: Colors.gray,
+  titleStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginTop: 2,
+    gap: 6,
+  },
+  title: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: Colors.textDark,
+    flex: 1,
+    lineHeight: 20,
   },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
     gap: 4,
+    marginTop: 2,
   },
   statusDot: {
     width: 6,
@@ -169,7 +253,59 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   statusText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
+  },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    marginTop: 6,
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  statText: {
+    fontSize: 12,
+    color: Colors.textMuted,
+    fontWeight: '500',
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    justifyContent: 'flex-end',
+  },
+  menuContainer: {
+    backgroundColor: Colors.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 36,
+  },
+  menuTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: Colors.textDark,
+    marginBottom: 6,
+  },
+  menuDivider: {
+    height: 1,
+    backgroundColor: Colors.border,
+    marginBottom: 8,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    gap: 14,
+  },
+  menuItemText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: Colors.textBody,
   },
 });
