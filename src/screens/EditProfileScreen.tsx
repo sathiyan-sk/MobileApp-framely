@@ -1,5 +1,7 @@
 import { Colors } from "@/src/constants/colors";
 import { userMock } from "@/src/constants/mockData";
+import { useScroll } from "@/src/context/ScrollContext";
+import { useContentInsets } from "@/src/hooks/useContentInsets";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -12,7 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const INDUSTRIES = [
   "Photography",
@@ -27,7 +29,8 @@ const EVENTS_PER_YEAR = ["1-5", "5-10", "25-50", "50+"];
 
 export default function EditProfileScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const { onScroll } = useScroll();
+  const { contentBottomPadding } = useContentInsets();
   const [fullName, setFullName] = useState(userMock.fullName || "Sathiya");
   const [mobile, setMobile] = useState("+91 98765 43210");
   const [studioName, setStudioName] = useState("");
@@ -44,10 +47,12 @@ export default function EditProfileScreen() {
       <ScrollView
         contentContainerStyle={[
           styles.scroll,
-          { paddingBottom: Math.max(insets.bottom + 110, 150) },
+          { paddingBottom: contentBottomPadding },
         ]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        onScroll={onScroll}
+        scrollEventThrottle={16}
       >
         {/* Header */}
         <View style={styles.header}>
@@ -235,11 +240,9 @@ export default function EditProfileScreen() {
             ))}
           </View>
         </View>
-      </ScrollView>
-
-      {/* Fixed Save Button */}
-      <View style={[styles.bottomContainer, { paddingBottom: Math.max(insets.bottom + 16, 24) }]}>
-        <TouchableOpacity
+        {/* Save Button — inside ScrollView so it's never hidden behind the bottom nav */}
+        <View style={styles.saveButtonWrapper}>
+          <TouchableOpacity
           onPress={handleSave}
           activeOpacity={0.85}
           testID="save-button"
@@ -255,6 +258,7 @@ export default function EditProfileScreen() {
           </LinearGradient>
         </TouchableOpacity>
       </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -424,14 +428,9 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
-  bottomContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    backgroundColor: Colors.bgPinkSoft,
+  saveButtonWrapper: {
+    marginTop: 24,
+    marginBottom: 8,
   },
   saveButton: {
     flexDirection: "row",
