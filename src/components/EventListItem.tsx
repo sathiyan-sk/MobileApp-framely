@@ -1,20 +1,21 @@
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
   Image,
-  TouchableOpacity,
   Modal,
   Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
-import type { EventPublishStatus, EventActivityStatus } from '../constants/mockData';
+import type { EventActivityStatus, EventPublishStatus } from '../constants/mockData';
 
 interface EventListItemProps {
   title: string;
   date: string;
+  location: string;
   photos: number;
   guests: number;
   publishStatus: EventPublishStatus;
@@ -26,7 +27,7 @@ interface EventListItemProps {
 }
 
 const eventStatusConfig = {
-  active: { color: Colors.activeStatus, bg: Colors.activeStatusBg, text: 'Active' },
+  active: { color: Colors.activeStatus, bg: Colors.activeStatusBg, text: 'Live' },
   upcoming: { color: Colors.upcomingStatus, bg: Colors.upcomingStatusBg, text: 'Upcoming' },
   expired: { color: Colors.expiredStatus, bg: Colors.expiredStatusBg, text: 'Expired' },
 };
@@ -47,6 +48,7 @@ const MENU_ACTIONS = [
 export const EventListItem: React.FC<EventListItemProps> = ({
   title,
   date,
+  location,
   photos,
   guests,
   publishStatus,
@@ -82,9 +84,11 @@ export const EventListItem: React.FC<EventListItemProps> = ({
 
       {/* Event Content */}
       <View style={styles.content}>
-        {/* Date + Dots Menu Row */}
+        {/* title + Dots Menu Row */}
         <View style={styles.topRow}>
-          <Text style={styles.date}>{date}</Text>
+          <Text style={styles.title} numberOfLines={2}>
+            {title}
+          </Text>
           <TouchableOpacity
             onPress={() => setMenuVisible(true)}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -98,11 +102,20 @@ export const EventListItem: React.FC<EventListItemProps> = ({
           </TouchableOpacity>
         </View>
 
-        {/* Title + Status */}
-        <View style={styles.titleStatusRow}>
-          <Text style={styles.title} numberOfLines={2}>
-            {title}
+        {/* Location Row */}
+        <View style={styles.infoRow}>
+          <Ionicons name="location-outline" size={14} color={Colors.gray} />
+          <Text style={styles.infoText} numberOfLines={1}>
+            {location}
           </Text>
+                  </View>
+
+        {/* Date Row + Status Badge */}
+        <View style={styles.dateRow}>
+          <View style={styles.infoRow}>
+            <Ionicons name="calendar-outline" size={14} color={Colors.gray} />
+            <Text style={styles.infoText}>{date}</Text>
+          </View>
           <View style={[styles.statusBadge, { backgroundColor: statusInfo.bg }]}>
             <View
               style={[styles.statusDot, { backgroundColor: statusInfo.color }]}
@@ -116,12 +129,18 @@ export const EventListItem: React.FC<EventListItemProps> = ({
         {/* Stats Row */}
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
-            <Ionicons name="people-outline" size={15} color={Colors.gray} />
-            <Text style={styles.statText}>{guests} Guests</Text>
+            <Ionicons name="image-outline" size={16} color={Colors.gray} />
+            <View>
+              <Text style={styles.statNumber}>{photos}</Text>
+              <Text style={styles.statLabel}>PHOTOS</Text>
+            </View>
           </View>
           <View style={styles.statItem}>
-            <Ionicons name="images-outline" size={15} color={Colors.gray} />
-            <Text style={styles.statText}>{photos} Photos</Text>
+            <Ionicons name="person-outline" size={16} color={Colors.gray} />
+            <View>
+              <Text style={styles.statNumber}>{guests}</Text>
+              <Text style={styles.statLabel}>GUESTS</Text>
+            </View>
           </View>
         </View>
       </View>
@@ -185,8 +204,8 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   imageWrapper: {
-    width: 155,
-    height: 145,
+    width: 150,
+    height: 150,
     position: 'relative',
   },
   image: {
@@ -217,18 +236,7 @@ const styles = StyleSheet.create({
   topRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  date: {
-    fontSize: 12.5,
-    fontWeight: '600',
-    color: Colors.primary,
-  },
-  titleStatusRow: {
-    flexDirection: 'row',
     alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    marginTop: 2,
     gap: 6,
   },
   title: {
@@ -238,14 +246,31 @@ const styles = StyleSheet.create({
     flex: 1,
     lineHeight: 20,
   },
+    infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 6,
+  },
+  infoText: {
+    fontSize: 12.5,
+    color: Colors.textBody,
+    fontWeight: '500',
+    flexShrink: 1,
+  },
+  dateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 6,
+  },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10,
-    gap: 4,
-    marginTop: 2,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 5,
   },
   statusDot: {
     width: 6,
@@ -253,24 +278,30 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   statusText: {
-    fontSize: 11,
-    fontWeight: '600',
+    fontSize: 11.5,
+    fontWeight: '700',
   },
   statsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
-    marginTop: 6,
+    gap: 22,
+    marginTop: 10,
   },
   statItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 7,
   },
-  statText: {
-    fontSize: 12,
-    color: Colors.textMuted,
-    fontWeight: '500',
+  statNumber: {
+    fontSize: 14,
+    color: Colors.textDark,
+    lineHeight: 16,
+    fontWeight: '700',
+  },
+  statLabel: {
+    fontSize: 9.5,
+    letterSpacing: 0.5,
+    fontWeight: '600',
   },
   // Modal styles
   modalOverlay: {

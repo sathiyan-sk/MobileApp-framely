@@ -125,25 +125,33 @@ export default function EventsScreen() {
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            data-testid="events-back-btn"
-          >
-            <Ionicons name="arrow-back" size={24} color={Colors.primary} />
-          </TouchableOpacity>
+          {/* Top nav row */}
+          <View style={styles.headerNavRow}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              data-testid="events-back-btn"
+            >
+              <Ionicons name="arrow-back" size={24} color={Colors.primary} />
+            </TouchableOpacity>
 
-          <View style={styles.headerCenter}>
-            <Text style={styles.headerTitle}>Events</Text>
-            <Text style={styles.headerSubtitle}>Workspace</Text>
+            <TouchableOpacity
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              data-testid="events-filter-icon"
+            >
+              <Ionicons name="funnel-outline" size={22} color={Colors.primary} />
+            </TouchableOpacity>
           </View>
 
-          <TouchableOpacity
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            data-testid="events-filter-icon"
-          >
-            <Ionicons name="funnel-outline" size={22} color={Colors.primary} />
-          </TouchableOpacity>
+          {/* Title block */}
+          <View style={styles.headerTextBlock}>
+            <Text style={styles.headerTitle}>Events</Text>
+            <Text style={styles.headerSubtitle}>Workspace</Text>
+            <Text style={styles.headerDescription}>
+              5 events across all over. Manage covers, galleries, photo sales,
+              and guest access.
+            </Text>
+          </View>
         </View>
 
         {/* Filter Tabs */}
@@ -220,6 +228,7 @@ export default function EventsScreen() {
                 eventId={event.id}
                 title={event.title}
                 date={event.date}
+                location={event.location}
                 photos={event.photos}
                 guests={event.guests}
                 publishStatus={event.publishStatus}
@@ -302,29 +311,37 @@ const styles = StyleSheet.create({
   },
   // Header
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 8,
   },
-  headerCenter: {
-    alignItems: 'center',
+  headerNavRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  headerTextBlock: {
+    alignItems: 'flex-start',
+    marginTop: 6,
   },
   headerTitle: {
-    fontSize: 26,
+    fontSize: 30,
     fontWeight: '800',
     color: Colors.textDark,
     fontFamily: 'Georgia',
     letterSpacing: -0.3,
   },
   headerSubtitle: {
-    fontSize: 16,
+    fontSize: 18,
     color: Colors.primary,
     fontStyle: 'italic',
     fontFamily: 'Georgia',
     marginTop: -2,
+  },
+    headerDescription: {
+    fontSize: 12.5,
+    color: Colors.textMuted,
+    marginTop: 6,
+    lineHeight: 18,
   },
   // Filter Tabs
   filterContainer: {

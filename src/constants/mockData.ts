@@ -108,7 +108,7 @@ export const myEvents = [
     id: "e1",
     date: "May 14, 2026",
     title: "Sarah & Daniel Wedding",
-        subtitle: "Wedding",
+    subtitle: "Wedding",
     location: "Sundar Lodge, Salem",
     guests: 128,
     count: 312,
@@ -194,6 +194,7 @@ export interface EventWorkspaceItem {
   id: string;
   title: string;
   date: string;
+  location: string;
   sortTimestamp: number;
   publishStatus: EventPublishStatus;
   eventStatus: EventActivityStatus;
@@ -207,6 +208,7 @@ export const eventsWorkspaceData: EventWorkspaceItem[] = [
     id: 'ew1',
     title: 'Sarah & James Wedding',
     date: 'Apr 25, 2026',
+    location: 'Sundar Lodge, Salem',
     sortTimestamp: new Date('2026-04-25').getTime(),
     publishStatus: 'published',
     eventStatus: 'active',
@@ -219,6 +221,7 @@ export const eventsWorkspaceData: EventWorkspaceItem[] = [
     id: 'ew2',
     title: "Meera's Baby Shower",
     date: 'Mar 10, 2026',
+    location: 'The Grand, Chennai',
     sortTimestamp: new Date('2026-03-10').getTime(),
     publishStatus: 'unpublished',
     eventStatus: 'upcoming',
@@ -231,6 +234,7 @@ export const eventsWorkspaceData: EventWorkspaceItem[] = [
     id: 'ew3',
     title: 'Arun & Priya Engagement',
     date: 'Feb 18, 2026',
+    location: 'Taj Hotel, Agra',
     sortTimestamp: new Date('2026-02-18').getTime(),
     publishStatus: 'published',
     eventStatus: 'active',
@@ -243,6 +247,7 @@ export const eventsWorkspaceData: EventWorkspaceItem[] = [
     id: 'ew4',
     title: 'Arun & Priya Engagement',
     date: 'Feb 18, 2026',
+    location: 'Taj Hotel, Agra',
     sortTimestamp: new Date('2026-02-18').getTime(),
     publishStatus: 'published',
     eventStatus: 'expired',
