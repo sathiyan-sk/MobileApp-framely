@@ -79,6 +79,20 @@ export default function EventsScreen() {
     return result;
   }, [events, selectedFilter, searchQuery, sortOrder]);
 
+
+  const navigateToUpload = (event: EventWorkspaceItem) => {
+    router.push({
+      pathname: '/(tabs)/select-photos',
+      params: {
+        eventId: event.id,
+        title: event.title,
+        date: event.date,
+        guests: String(event.guests),
+        image: event.image,
+      },
+    });
+  };
+
   const handleMenuAction = (action: string, eventId: string) => {
     const event = events.find((e) => e.id === eventId);
     if (!event) return;
@@ -234,6 +248,7 @@ export default function EventsScreen() {
                 publishStatus={event.publishStatus}
                 eventStatus={event.eventStatus}
                 image={event.image}
+                onPress={() => navigateToUpload(event)}
                 onMenuAction={handleMenuAction}
               />
             ))

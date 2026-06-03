@@ -1,6 +1,6 @@
+import { Tabs, useRouter } from "expo-router";
 import React, { useCallback } from "react";
 import { View } from "react-native";
-import { Tabs, useRouter } from "expo-router";
 
 import BottomTabBar from "@/src/components/BottomTabBar";
 import { Colors } from "@/src/constants/colors";
@@ -35,6 +35,7 @@ export default function TabsLayout() {
         <Tabs.Screen name="plan" options={{ href: null }} />
         <Tabs.Screen name="branding" options={{ href: null }} />
         <Tabs.Screen name="analytics" options={{ href: null }} />
+        <Tabs.Screen name="select-photos" options={{ href: null }} />
       </Tabs>
     </View>
     </ScrollProvider>
