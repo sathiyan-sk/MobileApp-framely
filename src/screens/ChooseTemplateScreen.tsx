@@ -1,4 +1,5 @@
 import { useScroll } from '@/src/context/ScrollContext';
+import { useContentInsets } from '@/src/hooks/useContentInsets';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -9,7 +10,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const PINK = '#EC4070';
 const PINK_SOFT = '#FFE3EC';
@@ -80,7 +81,7 @@ function DesignCard({ item, selected, onSelect }: { item: Design; selected: bool
 export default function ChooseDesign() {
   const [selectedId, setSelectedId] = useState('1');
   const [category, setCategory] = useState<'Wedding' | 'Events' | 'Sports'>('Wedding');
-  const insets = useSafeAreaInsets();
+  const { contentBottomPadding } = useContentInsets();
   const { onScroll } = useScroll();
 
   const selectedItem = designs.find((d) => d.id === selectedId);
@@ -109,7 +110,7 @@ export default function ChooseDesign() {
       </View>
 
       <ScrollView 
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom + 150, 160) }]} 
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: contentBottomPadding }]} 
         showsVerticalScrollIndicator={false}
         onScroll={onScroll}
         scrollEventThrottle={16}>
@@ -222,10 +223,8 @@ export default function ChooseDesign() {
             <Ionicons name="chevron-forward" size={14} color={MUTED} />
           </TouchableOpacity>
         </View>
-      </ScrollView>
-
-      {/* Action bar */}
-      <View style={styles.actionBar}>
+        {/* Action bar - Inside ScrollView */}
+        <View style={styles.actionBar}>
         <TouchableOpacity
           testID="back-action-btn"
           style={styles.backActionBtn}
@@ -246,6 +245,7 @@ export default function ChooseDesign() {
           <Text style={styles.createEmoji}>✨</Text>
         </TouchableOpacity>
       </View>
+    </ScrollView>
     </SafeAreaView>
   );
 }

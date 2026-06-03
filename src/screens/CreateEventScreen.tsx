@@ -14,7 +14,6 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { SCREEN_OVERRIDES } from '../constants/layout';
 import { useScroll } from '../context/ScrollContext';
 import { useContentInsets } from '../hooks/useContentInsets';
 
@@ -114,8 +113,8 @@ export default function CreateEvent() {
   const [reelAI, setReelAI] = useState(false);
   const [branding, setBranding] = useState(false);
   const { onScroll } = useScroll();
-  const { contentBottomPadding } = useContentInsets({extraBottomSpacing: SCREEN_OVERRIDES.CREATE_EVENT.EXTRA_BOTTOM_SPACING,});
-  return (
+  const { contentBottomPadding } = useContentInsets();
+    return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -292,12 +291,10 @@ export default function CreateEvent() {
                 onChange={setBranding}
               />
             </View>
-          </View>
-        </ScrollView>
-
-        {/* Bottom action bar */}
-        <View style={styles.actionBar}>
-          <TouchableOpacity
+          </View>          
+          {/* Bottom action bar - Inside ScrollView */}
+          <View style={styles.actionBar}>
+            <TouchableOpacity
             testID="cancel-btn"
             style={styles.cancelBtn}
             activeOpacity={0.85}
@@ -315,6 +312,7 @@ export default function CreateEvent() {
             <Ionicons name="arrow-forward" size={16} color="#fff" style={{ marginLeft: 6 }} />
           </TouchableOpacity>
         </View>
+      </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
