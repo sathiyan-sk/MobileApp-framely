@@ -13,7 +13,8 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import UploadOptionsSheet from '../components/UploadOptionsSheet';
 import { Colors } from '../constants/colors';
-
+import { useScroll } from '../context/ScrollContext';
+import { useContentInsets } from '../hooks/useContentInsets';
 // ─── Source tabs (Gallery / Camera / Files / Drive) ───────────────────────────
 type SourceKey = 'gallery' | 'camera' | 'files' | 'drive';
 
@@ -60,6 +61,11 @@ const TILE_HEIGHT = TILE_WIDTH * 0.82;
 
 export default function SelectPhotosScreen() {
   const insets = useSafeAreaInsets();
+  const { onScroll } = useScroll();
+  const { contentBottomPadding } = useContentInsets({
+    hasBottomNav: true,
+    extraBottomSpacing: 80, // Extra space for the fixed footer action bar
+  });
   const params = useLocalSearchParams<{
     title?: string;
     date?: string;
@@ -118,7 +124,9 @@ export default function SelectPhotosScreen() {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: contentBottomPadding }]}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
       >
         {/* Event card */}
         <View style={styles.eventCard}>
@@ -277,7 +285,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: GRID_PADDING,
-    paddingBottom: 24,
   },
   // Event card
   eventCard: {
