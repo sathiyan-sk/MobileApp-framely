@@ -1,9 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   Dimensions,
   Image,
+  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,9 +16,11 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import UploadOptionsSheet from '../components/UploadOptionsSheet';
+import UploadProgressCard, { UploadStatus } from '../components/UploadProgressCard';
 import { Colors } from '../constants/colors';
 import { useScroll } from '../context/ScrollContext';
 import { useContentInsets } from '../hooks/useContentInsets';
+
 // ─── Source tabs (Gallery / Camera / Files / Drive) ───────────────────────────
 type SourceKey = 'gallery' | 'camera' | 'files' | 'drive';
 
@@ -29,7 +35,7 @@ const SOURCE_TABS: {
   { key: 'drive', label: 'Drive', icon: 'cloud-outline' },
 ];
 
-// ─── Mock gallery photos (replace with API / device gallery later) ────────────
+// ─── Mock gallery photos (shown alongside real device photos) ─────────────────
 const PHOTO_URLS = [
   'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=400&q=80',
   'https://images.unsplash.com/photo-1519741497674-611481863552?w=400&q=80',
@@ -45,8 +51,10 @@ const PHOTO_URLS = [
   'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=400&q=80',
 ];
 
+type PhotoItem = { id: string; uri: string };
+
 // Build 24 items so the gallery fills the grid like the design.
-const GALLERY_PHOTOS = Array.from({ length: 24 }, (_, i) => ({
+const GALLERY_PHOTOS: PhotoItem[] = Array.from({ length: 24 }, (_, i) => ({
   id: `photo-${i}`,
   uri: PHOTO_URLS[i % PHOTO_URLS.length],
 }));
@@ -58,6 +66,11 @@ const GRID_COLS = 3;
 const TILE_WIDTH =
   (SCREEN_WIDTH - GRID_PADDING * 2 - GRID_GAP * (GRID_COLS - 1)) / GRID_COLS;
 const TILE_HEIGHT = TILE_WIDTH * 0.82;
+
+// ─── Upload simulation tuning ─────────────────────────────────────────────────
+const PER_PHOTO_MB = 0.8; // rough per-photo size estimate
+const TICK_MS = 320; // time to \"upload\" one photo
+const FAIL_RATE = 0.08; // chance a photo fails
 
 export default function SelectPhotosScreen() {
   const insets = useSafeAreaInsets();
@@ -80,15 +93,29 @@ export default function SelectPhotosScreen() {
     'https://images.unsplash.com/photo-1519741497674-611481863552?w=200&q=80';
 
   const [activeSource, setActiveSource] = useState<SourceKey>('gallery');
-  // Pre-select all photos to mirror the design (\"24 Selected\").
+  const [devicePhotos, setDevicePhotos] = useState<PhotoItem[]>([]);
+  // Pre-select all mock photos to mirror the design (\"24 Selected\").
   const [selected, setSelected] = useState<Set<string>>(
     () => new Set(GALLERY_PHOTOS.map((p) => p.id)),
   );
   const [optionsVisible, setOptionsVisible] = useState(false);
 
+  // ─── Upload state ───────────────────────────────────────────────────────────
+  const [status, setStatus] = useState<UploadStatus | 'idle'>('idle');
+  const [prog, setProg] = useState({ total: 0, processed: 0, finished: 0, failed: 0 });
+
+  const idsRef = useRef<string[]>([]);
+  const procRef = useRef(0);
+  const finRef = useRef(0);
+  const failRef = useRef(0);
+  const failedIdsRef = useRef<string[]>([]);
+
+  const allPhotos = useMemo(() => [...devicePhotos, ...GALLERY_PHOTOS], [devicePhotos]);
   const selectedCount = selected.size;
+  const isBusy = status === 'uploading' || status === 'paused';
 
   const togglePhoto = (id: string) => {
+    if (isBusy) return;
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -97,12 +124,188 @@ export default function SelectPhotosScreen() {
     });
   };
 
-  const clearSelection = () => setSelected(new Set());
+  const clearSelection = () => {
+    if (isBusy) return;
+    setSelected(new Set());
+  };
+
+  // ─── Permissions ──────────────────────────────────────────────────────────
+  const showSettingsAlert = (what: string) => {
+    Alert.alert(
+      `${what} access needed`,
+      `Framely needs ${what.toLowerCase()} access to add photos to your event. Please enable it in Settings.`,
+      [
+        { text: 'Not now', style: 'cancel' },
+        { text: 'Open Settings', onPress: () => Linking.openSettings() },
+      ],
+    );
+  };
+
+  const ensureLibraryPermission = async () => {
+    const current = await ImagePicker.getMediaLibraryPermissionsAsync();
+    if (current.granted) return true;
+    if (current.canAskAgain) {
+      const req = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (req.granted) return true;
+      if (!req.canAskAgain) showSettingsAlert('Photo Library');
+      return false;
+    }
+    showSettingsAlert('Photo Library');
+    return false;
+  };
+
+  const ensureCameraPermission = async () => {
+    const current = await ImagePicker.getCameraPermissionsAsync();
+    if (current.granted) return true;
+    if (current.canAskAgain) {
+      const req = await ImagePicker.requestCameraPermissionsAsync();
+      if (req.granted) return true;
+      if (!req.canAskAgain) showSettingsAlert('Camera');
+      return false;
+    }
+    showSettingsAlert('Camera');
+    return false;
+  };
+
+  const addDevicePhotos = (assets: ImagePicker.ImagePickerAsset[]) => {
+    if (!assets?.length) return;
+    const stamp = Date.now();
+    const items: PhotoItem[] = assets.map((a, i) => ({
+      id: `device-${stamp}-${i}`,
+      uri: a.uri,
+    }));
+    setDevicePhotos((prev) => [...items, ...prev]);
+    setSelected((prev) => {
+      const next = new Set(prev);
+      items.forEach((it) => next.add(it.id));
+      return next;
+    });
+  };
+
+  const pickFromGallery = async () => {
+    const ok = await ensureLibraryPermission();
+    if (!ok) return;
+    const res = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsMultipleSelection: true,
+      selectionLimit: 0,
+      quality: 0.8,
+    });
+    if (!res.canceled) addDevicePhotos(res.assets);
+  };
+
+  const pickFromCamera = async () => {
+    const ok = await ensureCameraPermission();
+    if (!ok) return;
+    const res = await ImagePicker.launchCameraAsync({ quality: 0.8 });
+    if (!res.canceled) addDevicePhotos(res.assets);
+  };
+
+  const handleSourceTab = (tab: { key: SourceKey; label: string }) => {
+    if (isBusy) return;
+    setActiveSource(tab.key);
+    if (tab.key === 'gallery') pickFromGallery();
+    else if (tab.key === 'camera') pickFromCamera();
+    else Alert.alert(tab.label, `${tab.label} import is coming soon.`);
+  };
+
+  // ─── Upload engine (simulated progress) ──────────────────────────────────────
+  const startUpload = useCallback((ids: string[]) => {
+    if (!ids.length) return;
+    idsRef.current = ids;
+    procRef.current = 0;
+    finRef.current = 0;
+    failRef.current = 0;
+    failedIdsRef.current = [];
+    setProg({ total: ids.length, processed: 0, finished: 0, failed: 0 });
+    setStatus('uploading');
+  }, []);
+
+  const runTick = useCallback(() => {
+    if (procRef.current >= idsRef.current.length) return;
+    const id = idsRef.current[procRef.current];
+    const fail = Math.random() < FAIL_RATE;
+    procRef.current += 1;
+    if (fail) {
+      failRef.current += 1;
+      failedIdsRef.current.push(id);
+    } else {
+      finRef.current += 1;
+    }
+    setProg({
+      total: idsRef.current.length,
+      processed: procRef.current,
+      finished: finRef.current,
+      failed: failRef.current,
+    });
+    if (procRef.current >= idsRef.current.length) {
+      setStatus('done');
+    }
+  }, []);
+
+  // Drive the interval whenever we are actively uploading.
+  useEffect(() => {
+    if (status !== 'uploading') return;
+    const timer = setInterval(runTick, TICK_MS);
+    return () => clearInterval(timer);
+  }, [status, runTick]);
+
+  // On completion: drop successfully-uploaded photos from the selection.
+  useEffect(() => {
+    if (status !== 'done') return;
+    const failedSet = new Set(failedIdsRef.current);
+    const uploadedSet = new Set(idsRef.current);
+    setSelected((prev) => {
+      const next = new Set<string>();
+      prev.forEach((id) => {
+        // keep failed photos and anything that wasn't part of this batch
+        if (failedSet.has(id) || !uploadedSet.has(id)) next.add(id);
+      });
+      return next;
+    });
+
+    // If everything succeeded, auto-dismiss the progress card.
+    if (failRef.current === 0) {
+      const t = setTimeout(() => setStatus('idle'), 1500);
+      return () => clearTimeout(t);
+    }
+  }, [status]);
+
+  const handlePauseToggle = () => {
+    setStatus((s) => (s === 'uploading' ? 'paused' : s === 'paused' ? 'uploading' : s));
+  };
+
+  const handleCancelUpload = () => {
+    idsRef.current = [];
+    procRef.current = 0;
+    finRef.current = 0;
+    failRef.current = 0;
+    failedIdsRef.current = [];
+    setProg({ total: 0, processed: 0, finished: 0, failed: 0 });
+    setStatus('idle');
+  };
+
+  const handleRetryFailed = () => {
+    const ids = [...failedIdsRef.current];
+    if (ids.length) startUpload(ids);
+  };
+
+  const handleConfirmUpload = () => {
+    setOptionsVisible(false);
+    startUpload(Array.from(selected));
+  };
 
   const headerInfo = useMemo(
     () => ({ title: eventTitle, date: eventDate, image: eventImage }),
     [eventTitle, eventDate, eventImage],
   );
+
+  // Derived numbers for the progress card.
+  const queue = Math.max(0, prog.total - prog.processed);
+  const percent = prog.total ? Math.round((prog.processed / prog.total) * 100) : 0;
+  const totalMb = prog.total * PER_PHOTO_MB;
+  const uploadedMb = (totalMb * percent) / 100;
+  const secondsLeft = Math.max(0, Math.ceil((queue * TICK_MS) / 1000));
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -150,8 +353,9 @@ export default function SelectPhotosScreen() {
               <TouchableOpacity
                 key={tab.key}
                 style={styles.tabItem}
-                onPress={() => setActiveSource(tab.key)}
+                onPress={() => handleSourceTab(tab)}
                 activeOpacity={0.8}
+                disabled={isBusy}
                 testID={`source-tab-${tab.key}`}
               >
                 <View style={[styles.tabIconWrap, active && styles.tabIconWrapActive]}>
@@ -195,7 +399,7 @@ export default function SelectPhotosScreen() {
 
         {/* Photo grid */}
         <View style={styles.grid}>
-          {GALLERY_PHOTOS.map((photo) => {
+          {allPhotos.map((photo) => {
             const isSelected = selected.has(photo.id);
             return (
               <TouchableOpacity
@@ -220,18 +424,48 @@ export default function SelectPhotosScreen() {
             );
           })}
         </View>
+
+        {/* Upload progress (mirrors the design once an upload starts) */}
+        {status !== 'idle' && (
+          <UploadProgressCard
+            status={status as UploadStatus}
+            progress={{
+              total: prog.total,
+              queue,
+              failed: prog.failed,
+              finished: prog.finished,
+              percent,
+              uploadedMb,
+              totalMb,
+              secondsLeft,
+            }}
+            onPauseToggle={handlePauseToggle}
+            onCancel={handleCancelUpload}
+            onRetryFailed={handleRetryFailed}
+          />
+        )}
       </ScrollView>
 
       {/* Bottom action bar */}
       <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
         <TouchableOpacity
-          style={[styles.uploadBtn, selectedCount === 0 && styles.uploadBtnDisabled]}
+          style={[
+            styles.uploadBtn,
+            (selectedCount === 0 || isBusy) && styles.uploadBtnDisabled,
+          ]}
           activeOpacity={0.9}
-          disabled={selectedCount === 0}
+          disabled={selectedCount === 0 || isBusy}
           onPress={() => setOptionsVisible(true)}
           testID="upload-options-btn"
         >
-          <Text style={styles.uploadBtnText}>Upload Options</Text>
+          {isBusy ? (
+            <View style={styles.uploadBtnBusy}>
+              <ActivityIndicator size="small" color={Colors.white} />
+              <Text style={styles.uploadBtnText}>Uploading</Text>
+            </View>
+          ) : (
+            <Text style={styles.uploadBtnText}>Upload Options</Text>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -240,7 +474,7 @@ export default function SelectPhotosScreen() {
         visible={optionsVisible}
         photoCount={selectedCount}
         onClose={() => setOptionsVisible(false)}
-        onUpload={() => setOptionsVisible(false)}
+        onUpload={handleConfirmUpload}
       />
     </SafeAreaView>
   );
@@ -460,6 +694,11 @@ const styles = StyleSheet.create({
   },
   uploadBtnDisabled: {
     opacity: 0.5,
+  },
+  uploadBtnBusy: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   uploadBtnText: {
     color: Colors.white,
