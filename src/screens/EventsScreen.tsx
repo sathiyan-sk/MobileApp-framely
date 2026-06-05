@@ -118,7 +118,7 @@ export default function EventsScreen() {
         Alert.alert('Share Event', `Share link for \"${event.title}\"`);
         break;
       case 'upload':
-        Alert.alert('Upload Photos', `Upload photos for \"${event.title}\"`);
+        navigateToUpload(event);
         break;
       case 'delete':
         Alert.alert('Delete Event', `Are you sure you want to delete \"${event.title}\"?`, [

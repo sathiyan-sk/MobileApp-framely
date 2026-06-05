@@ -73,11 +73,14 @@ EXPO_PUBLIC_BACKEND_URL=http://192.168.X.X:3000Show
 - npx expo install
 
 📦->Required packages:
+- npx expo install expo-media-library
 - npx expo install expo-image-picker
 - npx expo install expo-linear-gradient
 - npx expo install @expo/vector-icons
 - npx expo install react-native-screens react-native-safe-area-context
 - npx expo install react-native-gesture-handler
+- npx expo install @react-native-async-storage/async-storage
+
 
 ✔ (now start the projct)...
 - npx expo start

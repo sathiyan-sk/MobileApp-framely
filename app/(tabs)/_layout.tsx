@@ -36,6 +36,7 @@ export default function TabsLayout() {
         <Tabs.Screen name="branding" options={{ href: null }} />
         <Tabs.Screen name="analytics" options={{ href: null }} />
         <Tabs.Screen name="select-photos" options={{ href: null }} />
+        <Tabs.Screen name="all-photos" options={{ href: null }} />
       </Tabs>
     </View>
     </ScrollProvider>

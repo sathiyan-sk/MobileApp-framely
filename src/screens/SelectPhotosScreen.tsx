@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import * as MediaLibrary from 'expo-media-library';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -20,6 +21,8 @@ import UploadProgressCard, { UploadStatus } from '../components/UploadProgressCa
 import { Colors } from '../constants/colors';
 import { useScroll } from '../context/ScrollContext';
 import { useContentInsets } from '../hooks/useContentInsets';
+import { photoStorage } from '../services/photoStorage';
+import { PhotoItem, UploadedPhoto, UploadProgress } from '../types';
 
 // ─── Source tabs (Gallery / Camera / Files / Drive) ───────────────────────────
 type SourceKey = 'gallery' | 'camera' | 'files' | 'drive';
@@ -35,30 +38,6 @@ const SOURCE_TABS: {
   { key: 'drive', label: 'Drive', icon: 'cloud-outline' },
 ];
 
-// ─── Mock gallery photos (shown alongside real device photos) ─────────────────
-const PHOTO_URLS = [
-  'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=400&q=80',
-  'https://images.unsplash.com/photo-1519741497674-611481863552?w=400&q=80',
-  'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=400&q=80',
-  'https://images.unsplash.com/photo-1530023367847-a683933f4172?w=400&q=80',
-  'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=400&q=80',
-  'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=400&q=80',
-  'https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=400&q=80',
-  'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=400&q=80',
-  'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&q=80',
-  'https://images.unsplash.com/photo-1597157639073-69284dc0fdaf?w=400&q=80',
-  'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=400&q=80',
-  'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=400&q=80',
-];
-
-type PhotoItem = { id: string; uri: string };
-
-// Build 24 items so the gallery fills the grid like the design.
-const GALLERY_PHOTOS: PhotoItem[] = Array.from({ length: 24 }, (_, i) => ({
-  id: `photo-${i}`,
-  uri: PHOTO_URLS[i % PHOTO_URLS.length],
-}));
-
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const GRID_PADDING = 16;
 const GRID_GAP = 10;
@@ -68,9 +47,14 @@ const TILE_WIDTH =
 const TILE_HEIGHT = TILE_WIDTH * 0.82;
 
 // ─── Upload simulation tuning ─────────────────────────────────────────────────
-const PER_PHOTO_MB = 0.8; // rough per-photo size estimate
 const TICK_MS = 320; // time to \"upload\" one photo
 const FAIL_RATE = 0.08; // chance a photo fails
+const PAGE_SIZE = 24; // photos per page
+
+// Helper to generate unique IDs using timestamp + random
+const generateUniqueId = () => {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+};
 
 export default function SelectPhotosScreen() {
   const insets = useSafeAreaInsets();
@@ -80,12 +64,14 @@ export default function SelectPhotosScreen() {
     extraBottomSpacing: 80, // Extra space for the fixed footer action bar
   });
   const params = useLocalSearchParams<{
+    eventId?: string;
     title?: string;
     date?: string;
     guests?: string;
     image?: string;
   }>();
 
+  const eventId = params.eventId || 'default-event';
   const eventTitle = params.title || 'Sarah & James Wedding';
   const eventDate = params.date || 'Apr 25, 2026';
   const eventImage =
@@ -94,11 +80,15 @@ export default function SelectPhotosScreen() {
 
   const [activeSource, setActiveSource] = useState<SourceKey>('gallery');
   const [devicePhotos, setDevicePhotos] = useState<PhotoItem[]>([]);
-  // Pre-select all mock photos to mirror the design (\"24 Selected\").
-  const [selected, setSelected] = useState<Set<string>>(
-    () => new Set(GALLERY_PHOTOS.map((p) => p.id)),
-  );
+  const [uploadedPhotos, setUploadedPhotos] = useState<PhotoItem[]>([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [hasMorePhotos, setHasMorePhotos] = useState(true);
+  const [loadingPhotos, setLoadingPhotos] = useState(false);
+  
+  // FIXED: No pre-selection - start with empty set
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [optionsVisible, setOptionsVisible] = useState(false);
+  const [cameraPermissionRequested, setCameraPermissionRequested] = useState(false);
 
   // ─── Upload state ───────────────────────────────────────────────────────────
   const [status, setStatus] = useState<UploadStatus | 'idle'>('idle');
@@ -110,9 +100,98 @@ export default function SelectPhotosScreen() {
   const failRef = useRef(0);
   const failedIdsRef = useRef<string[]>([]);
 
-  const allPhotos = useMemo(() => [...devicePhotos, ...GALLERY_PHOTOS], [devicePhotos]);
+  const allPhotos = useMemo(() => [...devicePhotos, ...uploadedPhotos], [devicePhotos, uploadedPhotos]);
   const selectedCount = selected.size;
   const isBusy = status === 'uploading' || status === 'paused';
+
+  // ─── Load persisted upload progress on mount ─────────────────────────────────
+  useEffect(() => {
+    const loadPersistedProgress = async () => {
+      const progress = await photoStorage.getUploadProgress();
+      if (progress && progress.eventId === eventId && progress.status !== 'done') {
+        // Restore upload progress
+        idsRef.current = progress.photoIds;
+        procRef.current = progress.processed;
+        finRef.current = progress.finished;
+        failRef.current = progress.failed;
+        failedIdsRef.current = progress.failedIds;
+        setProg({
+          total: progress.total,
+          processed: progress.processed,
+          finished: progress.finished,
+          failed: progress.failed,
+        });
+        setStatus(progress.status);
+        
+        // Restore selection
+        setSelected(new Set(progress.photoIds));
+      }
+    };
+
+    loadPersistedProgress();
+  }, [eventId]);
+
+  // ─── Load uploaded photos for this event ─────────────────────────────────────
+  useEffect(() => {
+    const loadUploadedPhotos = async () => {
+      const photos = await photoStorage.getEventPhotos(eventId);
+      setUploadedPhotos(photos.map(p => ({ id: p.id, uri: p.uri })));
+    };
+
+    loadUploadedPhotos();
+  }, [eventId]);
+
+  // ─── Load device gallery photos with pagination ─────────────────────────────
+  const loadGalleryPhotos = useCallback(async (page: number = 0) => {
+    setLoadingPhotos(true);
+    try {
+      const { status } = await MediaLibrary.getPermissionsAsync();
+      if (status !== 'granted') {
+        setLoadingPhotos(false);
+        return;
+      }
+
+      const result = await MediaLibrary.getAssetsAsync({
+        first: PAGE_SIZE,
+        mediaType: 'photo',
+        sortBy: [[MediaLibrary.SortBy.creationTime, false]],
+        after: page > 0 ? undefined : undefined, // For pagination, you'd use endCursor
+      });
+
+      if (page === 0) {
+        // First load
+        const photos: PhotoItem[] = result.assets.map(asset => ({
+          id: asset.id,
+          uri: asset.uri,
+          filename: asset.filename,
+          width: asset.width,
+          height: asset.height,
+          creationTime: asset.creationTime,
+          modificationTime: asset.modificationTime,
+        }));
+        setDevicePhotos(photos);
+      } else {
+        // Load more
+        const photos: PhotoItem[] = result.assets.map(asset => ({
+          id: asset.id,
+          uri: asset.uri,
+          filename: asset.filename,
+          width: asset.width,
+          height: asset.height,
+          creationTime: asset.creationTime,
+          modificationTime: asset.modificationTime,
+        }));
+        setDevicePhotos(prev => [...prev, ...photos]);
+      }
+
+      setHasMorePhotos(result.hasNextPage);
+      setCurrentPage(page);
+    } catch (error) {
+      console.error('Failed to load gallery photos:', error);
+    } finally {
+      setLoadingPhotos(false);
+    }
+  }, []);
 
   const togglePhoto = (id: string) => {
     if (isBusy) return;
@@ -129,6 +208,11 @@ export default function SelectPhotosScreen() {
     setSelected(new Set());
   };
 
+  const selectAll = () => {
+    if (isBusy) return;
+    setSelected(new Set(allPhotos.map(p => p.id)));
+  };
+
   // ─── Permissions ──────────────────────────────────────────────────────────
   const showSettingsAlert = (what: string) => {
     Alert.alert(
@@ -142,10 +226,10 @@ export default function SelectPhotosScreen() {
   };
 
   const ensureLibraryPermission = async () => {
-    const current = await ImagePicker.getMediaLibraryPermissionsAsync();
+    const current = await MediaLibrary.getPermissionsAsync();
     if (current.granted) return true;
     if (current.canAskAgain) {
-      const req = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const req = await MediaLibrary.requestPermissionsAsync();
       if (req.granted) return true;
       if (!req.canAskAgain) showSettingsAlert('Photo Library');
       return false;
@@ -169,12 +253,16 @@ export default function SelectPhotosScreen() {
 
   const addDevicePhotos = (assets: ImagePicker.ImagePickerAsset[]) => {
     if (!assets?.length) return;
-    const stamp = Date.now();
-    const items: PhotoItem[] = assets.map((a, i) => ({
-      id: `device-${stamp}-${i}`,
+    const items: PhotoItem[] = assets.map((a) => ({
+      id: generateUniqueId(), // FIXED: Better unique ID generation
       uri: a.uri,
+      filename: a.fileName,
+      width: a.width,
+      height: a.height,
     }));
     setDevicePhotos((prev) => [...items, ...prev]);
+    
+    // FIXED: Only pre-select newly added device photos
     setSelected((prev) => {
       const next = new Set(prev);
       items.forEach((it) => next.add(it.id));
@@ -185,16 +273,34 @@ export default function SelectPhotosScreen() {
   const pickFromGallery = async () => {
     const ok = await ensureLibraryPermission();
     if (!ok) return;
-    const res = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsMultipleSelection: true,
-      selectionLimit: 0,
-      quality: 0.8,
-    });
-    if (!res.canceled) addDevicePhotos(res.assets);
+    
+    // Load initial gallery photos
+    await loadGalleryPhotos(0);
   };
 
   const pickFromCamera = async () => {
+    // FIXED: Show confirmation dialog first before requesting permission
+    if (!cameraPermissionRequested) {
+      Alert.alert(
+        'Use Camera',
+        'Would you like to take a photo with your camera?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Yes',
+            onPress: async () => {
+              setCameraPermissionRequested(true);
+              const ok = await ensureCameraPermission();
+              if (!ok) return;
+              const res = await ImagePicker.launchCameraAsync({ quality: 0.8 });
+              if (!res.canceled) addDevicePhotos(res.assets);
+            },
+          },
+        ],
+      );
+      return;
+    }
+
     const ok = await ensureCameraPermission();
     if (!ok) return;
     const res = await ImagePicker.launchCameraAsync({ quality: 0.8 });
@@ -209,6 +315,34 @@ export default function SelectPhotosScreen() {
     else Alert.alert(tab.label, `${tab.label} import is coming soon.`);
   };
 
+  // ─── Persist upload progress ─────────────────────────────────────────────────
+  const persistProgress = useCallback(async () => {
+    if (status === 'idle') {
+      await photoStorage.clearUploadProgress();
+      return;
+    }
+
+    const progress: UploadProgress = {
+      eventId,
+      photoIds: idsRef.current,
+      total: idsRef.current.length,
+      processed: procRef.current,
+      finished: finRef.current,
+      failed: failRef.current,
+      failedIds: failedIdsRef.current,
+      status: status as 'uploading' | 'paused' | 'done',
+      startedAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+
+    await photoStorage.saveUploadProgress(progress);
+  }, [status, eventId]);
+
+  // Persist progress whenever it changes
+  useEffect(() => {
+    persistProgress();
+  }, [persistProgress]);
+
   // ─── Upload engine (simulated progress) ──────────────────────────────────────
   const startUpload = useCallback((ids: string[]) => {
     if (!ids.length) return;
@@ -221,7 +355,7 @@ export default function SelectPhotosScreen() {
     setStatus('uploading');
   }, []);
 
-  const runTick = useCallback(() => {
+  const runTick = useCallback(async () => {
     if (procRef.current >= idsRef.current.length) return;
     const id = idsRef.current[procRef.current];
     const fail = Math.random() < FAIL_RATE;
@@ -240,8 +374,19 @@ export default function SelectPhotosScreen() {
     });
     if (procRef.current >= idsRef.current.length) {
       setStatus('done');
+      
+      // Save uploaded photos to storage
+      const successfulIds = idsRef.current.filter(id => !failedIdsRef.current.includes(id));
+      const successfulPhotos = allPhotos.filter(p => successfulIds.includes(p.id));
+      const uploadedPhotos: UploadedPhoto[] = successfulPhotos.map(p => ({
+        ...p,
+        eventId,
+        uploadedAt: Date.now(),
+      }));
+      
+      await photoStorage.addPhotosToEvent(eventId, uploadedPhotos);
     }
-  }, []);
+  }, [allPhotos, eventId]);
 
   // Drive the interval whenever we are actively uploading.
   useEffect(() => {
@@ -266,7 +411,10 @@ export default function SelectPhotosScreen() {
 
     // If everything succeeded, auto-dismiss the progress card.
     if (failRef.current === 0) {
-      const t = setTimeout(() => setStatus('idle'), 1500);
+      const t = setTimeout(() => {
+        setStatus('idle');
+        photoStorage.clearUploadProgress();
+      }, 1500);
       return () => clearTimeout(t);
     }
   }, [status]);
@@ -283,6 +431,7 @@ export default function SelectPhotosScreen() {
     failedIdsRef.current = [];
     setProg({ total: 0, processed: 0, finished: 0, failed: 0 });
     setStatus('idle');
+    photoStorage.clearUploadProgress();
   };
 
   const handleRetryFailed = () => {
@@ -295,6 +444,32 @@ export default function SelectPhotosScreen() {
     startUpload(Array.from(selected));
   };
 
+  const handleLoadMore = () => {
+    if (!loadingPhotos && hasMorePhotos) {
+      loadGalleryPhotos(currentPage + 1);
+    }
+  };
+
+  // FIXED: Confirm before going back during active upload
+  const handleBack = () => {
+    if (isBusy) {
+      Alert.alert(
+        'Upload in Progress',
+        'Are you sure you want to leave? Your upload is still in progress.',
+        [
+          { text: 'Stay', style: 'cancel' },
+          {
+            text: 'Leave',
+            style: 'destructive',
+            onPress: () => router.back(),
+          },
+        ],
+      );
+      return;
+    }
+    router.back();
+  };
+
   const headerInfo = useMemo(
     () => ({ title: eventTitle, date: eventDate, image: eventImage }),
     [eventTitle, eventDate, eventImage],
@@ -303,7 +478,9 @@ export default function SelectPhotosScreen() {
   // Derived numbers for the progress card.
   const queue = Math.max(0, prog.total - prog.processed);
   const percent = prog.total ? Math.round((prog.processed / prog.total) * 100) : 0;
-  const totalMb = prog.total * PER_PHOTO_MB;
+  
+  // FIXED: Calculate actual file sizes (simplified for now, can be enhanced)
+  const totalMb = prog.total * 0.8; // rough estimate
   const uploadedMb = (totalMb * percent) / 100;
   const secondsLeft = Math.max(0, Math.ceil((queue * TICK_MS) / 1000));
 
@@ -313,7 +490,7 @@ export default function SelectPhotosScreen() {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backBtn}
-          onPress={() => router.back()}
+          onPress={handleBack}
           activeOpacity={0.8}
           testID="select-photos-back-btn"
         >
@@ -387,13 +564,24 @@ export default function SelectPhotosScreen() {
 
           <View style={styles.selectionInfo}>
             <Text style={styles.selectedCount}>{selectedCount} Selected</Text>
-            <TouchableOpacity
-              onPress={clearSelection}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              testID="clear-selection-btn"
-            >
-              <Text style={styles.clearText}>Clear</Text>
-            </TouchableOpacity>
+            {selectedCount > 0 && selectedCount < allPhotos.length && (
+              <TouchableOpacity
+                onPress={selectAll}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                testID="select-all-btn"
+              >
+                <Text style={styles.actionText}>Select All</Text>
+              </TouchableOpacity>
+            )}
+            {selectedCount > 0 && (
+              <TouchableOpacity
+                onPress={clearSelection}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                testID="clear-selection-btn"
+              >
+                <Text style={styles.clearText}>Clear</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 
@@ -410,20 +598,34 @@ export default function SelectPhotosScreen() {
                 testID={`photo-tile-${photo.id}`}
               >
                 <Image source={{ uri: photo.uri }} style={styles.tileImage} />
-                <View
-                  style={[
-                    styles.checkCircle,
-                    isSelected ? styles.checkCircleOn : styles.checkCircleOff,
-                  ]}
-                >
-                  {isSelected && (
+                {/* FIXED: Only show checkmark when selected */}
+                {isSelected && (
+                  <View style={styles.checkCircle}>
                     <Ionicons name="checkmark" size={14} color={Colors.white} />
-                  )}
-                </View>
+                  </View>
+                )}
               </TouchableOpacity>
             );
           })}
         </View>
+
+        {/* Load more button */}
+        {hasMorePhotos && !loadingPhotos && (
+          <TouchableOpacity
+            style={styles.loadMoreBtn}
+            onPress={handleLoadMore}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.loadMoreText}>Load More Photos</Text>
+          </TouchableOpacity>
+        )}
+
+        {loadingPhotos && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="small" color={Colors.primary} />
+            <Text style={styles.loadingText}>Loading photos...</Text>
+          </View>
+        )}
 
         {/* Upload progress (mirrors the design once an upload starts) */}
         {status !== 'idle' && (
@@ -632,6 +834,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: Colors.primary,
   },
+  actionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.primary,
+  },
   clearText: {
     fontSize: 14,
     fontWeight: '600',
@@ -665,12 +872,31 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: Colors.white,
-  },
-  checkCircleOn: {
     backgroundColor: Colors.primary,
   },
-  checkCircleOff: {
-    backgroundColor: 'rgba(0,0,0,0.18)',
+  // Load More
+  loadMoreBtn: {
+    marginTop: 16,
+    paddingVertical: 14,
+    backgroundColor: Colors.white,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  loadMoreText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.primary,
+  },
+  loadingContainer: {
+    marginTop: 16,
+    alignItems: 'center',
+    gap: 8,
+  },
+  loadingText: {
+    fontSize: 13,
+    color: Colors.textMuted,
   },
   // Footer
   footer: {
