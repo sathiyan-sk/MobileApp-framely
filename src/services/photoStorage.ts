@@ -70,10 +70,32 @@ class PhotoStorageService {
       if (!data) return [];
       
       const eventPhotos: EventPhotos = JSON.parse(data);
-      return eventPhotos.photos;
-    } catch (error) {
+      // Always return latest first, regardless of insertion order on disk.
+      return [...eventPhotos.photos].sort(
+        (a, b) => (b.uploadedAt ?? 0) - (a.uploadedAt ?? 0),
+      );    } 
+      catch (error) {
       console.error('Failed to get event photos:', error);
       return [];
+    }
+  }
+    async getEventPhotosWithPagination(
+    eventId: string,
+    page: number = 0,
+    pageSize: number = 24,
+  ): Promise<{ photos: UploadedPhoto[]; hasMore: boolean; total: number }> {
+    try {
+      const all = await this.getEventPhotos(eventId);
+      const start = page * pageSize;
+      const end = start + pageSize;
+      return {
+        photos: all.slice(start, end),
+        hasMore: end < all.length,
+        total: all.length,
+      };
+    } catch (error) {
+      console.error('Failed to get paginated event photos:', error);
+      return { photos: [], hasMore: false, total: 0 };
     }
   }
 

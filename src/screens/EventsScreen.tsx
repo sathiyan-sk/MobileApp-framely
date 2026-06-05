@@ -79,6 +79,19 @@ export default function EventsScreen() {
     return result;
   }, [events, selectedFilter, searchQuery, sortOrder]);
 
+  const navigateToEventGallery = (event: EventWorkspaceItem) => {
+    router.push({
+      pathname: '/(tabs)/all-photos',
+      params: {
+        eventId: event.id,
+        title: event.title,
+        date: event.date,
+        guests: String(event.guests),
+        image: event.image,
+      },
+    });
+  };
+
 
   const navigateToUpload = (event: EventWorkspaceItem) => {
     router.push({
@@ -248,7 +261,7 @@ export default function EventsScreen() {
                 publishStatus={event.publishStatus}
                 eventStatus={event.eventStatus}
                 image={event.image}
-                onPress={() => navigateToUpload(event)}
+                onPress={() => navigateToEventGallery(event)}
                 onMenuAction={handleMenuAction}
               />
             ))
